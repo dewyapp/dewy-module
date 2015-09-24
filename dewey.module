@@ -31,6 +31,26 @@ function dewey_menu() {
   return $items;
 }
 
+function dewey_page_build(&$page) {
+  $settings = array(
+    'url' => url(drupal_get_path('module', 'dewey').'/php/dewey_counter.php'),
+    'data' => array(
+      'path' => current_path(),
+    ),
+  );
+  $page['content'][] = array(
+    '#attached' => array(   
+      'js' => array(
+        drupal_get_path('module', 'dewey') . '/js/dewey_counter.js' => array(),
+      ),
+    ),
+  );
+  $page['content']['#attached']['js'][] = array(
+    'data' => array('dewey' => $settings),
+    'type' => 'setting',
+  );
+}
+
 function dewey_config($form, &$form_state) {
   $form['dewey_enabled'] = array(
     '#type' => 'checkbox',
