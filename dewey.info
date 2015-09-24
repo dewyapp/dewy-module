@@ -1,0 +1,5 @@
+name = Dewey
+description = Provides the Dewey service with information about your site.
+core = 7.x
+package = Dewey
+version = 7.x-0.1

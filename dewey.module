@@ -1,0 +1,43 @@
+<?php
+/**
+ * @file
+ * Code for the Dewey module
+ */
+
+/**
+ * Implements hook_menu()
+ */
+
+function dewey_menu() {
+  $items = array();
+
+  $items['admin/config/system/dewey'] = array(
+    'title' => 'Dewey',
+    'description' => 'Dewey Drupal module configuration page.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('dewey_config'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function dewey_config($form, &$form_state) {
+  $form['dewey_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable Dewey to report on this site'),
+    '#default_value' => variable_get('dewey_enabled', 1),
+    '#description' => t('Enable Dewey to communicate with this site to generate reports for you.'),
+  );
+  $form['dewey_api_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Dewey API key'),
+    '#size' => 30,
+    '#maxlength' => 30,
+    '#description' => t('The API key of your Dewey account. This will ensure your site links to your Dewey account. <a href="">Get a Dewey API key</a>.'),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
