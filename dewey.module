@@ -36,6 +36,7 @@ function dewey_page_build(&$page) {
     'url' => url(drupal_get_path('module', 'dewey').'/php/dewey_counter.php'),
     'data' => array(
       'path' => current_path(),
+      'drupal' => DRUPAL_ROOT,
     ),
   );
   $page['content'][] = array(
