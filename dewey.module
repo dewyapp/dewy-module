@@ -20,6 +20,14 @@ function dewey_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['admin/reports/dewey'] = array(
+    'title' => 'Dewey report',
+    'description' => 'Information about your site for Dewey.',
+    'page callback' => 'dewey_report',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
 }
 
@@ -40,4 +48,8 @@ function dewey_config($form, &$form_state) {
   );
 
   return system_settings_form($form);
+}
+
+function dewey_report() {
+  print 'hello world';
 }
