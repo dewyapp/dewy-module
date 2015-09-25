@@ -108,25 +108,14 @@ function dewey_report() {
 
   // Get all users, roles and last signons
   $output['users'] = array();
-  $output['roles'] = array();
-  $output['last_access'] = 0;
 
-  $result = db_query("SELECT users.name AS name, mail, access, status, role.name AS role FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid");
+  $result = db_query("SELECT users.name AS name, mail, access AS last_access, status, role.name AS role FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid");
   while ($user = $result->fetchAssoc()) {
     if (isset($output['users'][$user['name']] )) {
       $output['users'][$user['name']]['role'][] = $user['role'];
     } else {
       $output['users'][$user['name']] = $user;
       $output['users'][$user['name']]['role'] = array($user['role']);
-      if ($user['access'] > $output['last_access']) {
-        $output['last_access'] = $user['access'];
-      }
-    }
-
-    if (isset($output['roles'][$user['role']])) {
-      $output['roles'][$user['role']]++;
-    } else {
-      $output['roles'][$user['role']] = 1;
     }
   }
 
