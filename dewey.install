@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @file
+ * Install and uninstall functions for Dewey
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function dewey_uninstall() {
+  // Remove variables.
+  variable_del('dewey_enabled');
+  variable_del('dewey_api_key');
+}
+
+/**
+ * Implements hook_schema().
+ */
+function dewey_schema() {
+  $schema['dewey_counter'] = array(
+    'description' => 'Path access statistics for Dewey.',
+    'fields' => array(
+      'path' => array(
+        'description' => 'The path accessed.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'hits' => array(
+        'description' => 'The number of times the path has been accessed since last Dewey reset.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'big',
+      ),
+      'lastaccess' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Timestamp of last access.',
+      ),
+    ),
+    'primary key' => array('path'),
+  );
+
+  return $schema;
+}

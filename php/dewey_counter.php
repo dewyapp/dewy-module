@@ -22,8 +22,9 @@ if (isset($_POST['drupal'])) {
   db_merge('dewey_counter')
     ->key(array('path' => $path))
     ->fields(array(
-      'count' => 1,
+      'hits' => 1,
+      'lastaccess' => REQUEST_TIME,
     ))
-    ->expression('count', 'count + 1')
+    ->expression('hits', 'hits + 1')
     ->execute();
 }
