@@ -13,7 +13,7 @@ function dewey_menu() {
 
   $items['admin/config/system/dewey'] = array(
     'title' => 'Dewey',
-    'description' => 'Dewey Drupal module configuration page.',
+    'description' => 'Dewey configuration page.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('dewey_config'),
     'access arguments' => array('administer site configuration'),
