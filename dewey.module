@@ -76,9 +76,14 @@ function dewey_report() {
   $output['audited'] = time();
 
   // Get path accesses
+  $ignores = array('admin');
   $result = db_query("SELECT path, hits, lastaccess FROM dewey_counter");
   while ($path = $result->fetchAssoc()) {
-    $output['traffic'][$path['path']] = array('hits' => $path['hits'], 'last_access' => $path['lastaccess']);
+    foreach ($ignores as $ignore) {
+      if (substr($path['path'], 0, strlen($ignore)) != $ignore) {
+        $output['traffic'][$path['path']] = array('hits' => $path['hits'], 'last_access' => $path['lastaccess']);
+      }
+    }
   }
 
   // Get the file count and file sizes
