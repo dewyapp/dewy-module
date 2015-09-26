@@ -138,6 +138,17 @@ function dewey_report() {
     }
   }
 
+  // Get all block content
+  $result = db_select('block_custom', 'block')
+  ->fields('block', array('bid', 'body'))
+  ->execute();
+  while ($block = $result->fetchAssoc()) {
+    $words = preg_split("/[\s,]+/", strtolower($block['body']));
+    foreach ($words as $word) {
+      $output['content']['blocks'][$block['bid']]['words'][] = $word;
+    }
+  }
+
   // Get all enabled modules
   $modules = system_list('module_enabled');
   foreach ($modules as $module => $module_info) {
