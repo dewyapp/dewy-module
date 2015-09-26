@@ -104,8 +104,6 @@ function dewey_report() {
   }
 
   // Get all users, roles and last signons
-  $output['users'] = array();
-
   $result = db_query("SELECT users.name AS name, mail, access AS last_access, status, role.name AS role FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid");
   while ($user = $result->fetchAssoc()) {
     if (isset($output['users'][$user['name']] )) {
@@ -116,27 +114,27 @@ function dewey_report() {
     }
   }
 
-  // Get all content types
-  $output['content_types'] = array();
-
+  // Get all node content
   $result = db_query("SELECT nid, type, created, changed FROM node");
   while ($node = $result->fetchAssoc()) {
-    $output['content_types'][$node['type']][$node['nid']] = array('created' => $node['created'], 'changed' => $node['changed']);
+    $output['content']['nodes'][$node['nid']] = array('created' => $node['created'], 'changed' => $node['changed'], 'type' => $node['type']);
   }
 
-  // Get content
   $fields = field_info_fields();
   foreach ($fields as $field) {
     if ($field['module'] == 'text') {
       $table = _field_sql_storage_tablename($field);
       $column = _field_sql_storage_columnname($field['field_name'], 'value');
       $result = db_select($table, 'field')
-      ->fields('field', array($column))
+      ->fields('field', array($column, 'entity_id'))
+      ->condition('entity_type', 'node', '=')
       ->execute();
     }
-    while ($value = $result->fetchAssoc()) {
-      $words = preg_split("/[\s,]+/", strtolower($value[$column]));
-      $output['words'][] = $words;
+    while ($field = $result->fetchAssoc()) {
+      $words = preg_split("/[\s,]+/", strtolower($field[$column]));
+      foreach ($words as $word) {
+        $output['content']['nodes'][$field['entity_id']]['words'][] = $word;
+      }
     }
   }
 
