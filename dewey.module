@@ -24,7 +24,7 @@ function dewey_menu() {
     'title' => 'Dewey report',
     'description' => 'Information about your site for Dewey.',
     'page callback' => 'dewey_report',
-    'access arguments' => array('administer site configuration'),
+    'access callback' => 'dewey_report_access_callback',
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -69,6 +69,14 @@ function dewey_config($form, &$form_state) {
   );
 
   return system_settings_form($form);
+}
+
+function dewey_report_access_callback() {
+  if (variable_get('dewey_enabled', 0) == 1) {
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 function dewey_report() {
