@@ -122,9 +122,9 @@ function dewey_report() {
   // Get all content types and content
   $output['content_types'] = array();
 
-  $result = db_query("SELECT count(nid) as count, type FROM node");
-  while ($content_type = $result->fetchAssoc()) {
-    $output['content_types'][$content_type['type']] = intval($content_type['count']);
+  $result = db_query("SELECT nid, type, created, changed FROM node");
+  while ($node = $result->fetchAssoc()) {
+    $output['content_types'][$node['type']][$node['nid']] = array('created' => $node['created'], 'changed' => $node['changed']);
   }
 
   if (db_table_exists('field_data_body')) {
