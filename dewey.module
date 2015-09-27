@@ -73,7 +73,12 @@ function dewey_config($form, &$form_state) {
 
 function dewey_report_access_callback() {
   if (variable_get('dewey_enabled', 0) == 1) {
-    return TRUE;
+    $allowed_viewers = array('127.0.0.1', '::1', gethostbyname("dewey.io"));
+    foreach ($allowed_viewers as $viewer) {
+      if (ip_address() == $viewer) {
+        return TRUE;
+      }
+    }
   }
 
   return FALSE;
