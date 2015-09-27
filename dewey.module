@@ -62,6 +62,7 @@ function dewey_config($form, &$form_state) {
   $form['dewey_api_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Dewey API key'),
+    '#default_value' => variable_get('dewey_api_key', ''),
     '#size' => 30,
     '#maxlength' => 30,
     '#description' => t('The API key of your Dewey account. This will ensure your site links to your Dewey account. <a href="">Get a Dewey API key</a>.'),
