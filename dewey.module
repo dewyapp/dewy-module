@@ -68,8 +68,26 @@ function dewey_config($form, &$form_state) {
     '#description' => t('The API key of your Dewey account. This will ensure your site links to your Dewey account. <a href="">Get a Dewey API key</a>.'),
     '#required' => TRUE,
   );
+  $form['#validate'][] = 'dewey_api_key_validate';
 
   return system_settings_form($form);
+}
+
+function dewey_api_key_validate(&$elements, &$form_state, $form_id = NULL) {
+  $data = 'api_key='.$form_state['values']['dewey_api_key'].'&site='.$GLOBALS['base_url'];
+  $options = array(
+    'method' => 'POST',
+    'data' => $data,
+    'timeout' => 15,
+    'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+  );
+  $result = drupal_http_request('http://dewey.io/intake', $options);
+  switch($result->code) {
+    case '0':
+      form_set_error('dewey_api_key','Dewey API key is not valid.');
+    default:
+      form_set_error('dewey_api_key','Dewey is unreachable, the API key cannot be verified at this time.');
+  }
 }
 
 function dewey_report_access_callback() {
