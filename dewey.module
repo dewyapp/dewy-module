@@ -182,5 +182,5 @@ function dewey_report() {
     }
   }
 
-  print json_encode($output);
+  print drupal_json_output($output);
 }
