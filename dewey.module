@@ -200,5 +200,8 @@ function dewey_report() {
     }
   }
 
+  // Get maintenance mode
+  $output['maintenance'] = variable_get('maintenance_mode');
+
   print drupal_json_output($output);
 }
