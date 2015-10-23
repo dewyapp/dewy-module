@@ -2,13 +2,14 @@
 
 ## Installation
 
-To install via Drush:
+* Install via Drush:
 
-	drush dl dewey
-	drush en dewey
+		drush dl dewey
+		drush en dewey
 
 ## Usage
 
-[Get a Dewey API key](http://dewey.io) and then enable Dewey reporting for your site via Drush, where api_key is from your Dewey.io account.
+1. [Get a Dewey API key](http://dewey.io).
+2. Enable Dewey reporting for your site via Drush, where api_key is from your Dewey.io account.
 
-	drush dewey-enable api_key
+		drush dewey-enable api_key
