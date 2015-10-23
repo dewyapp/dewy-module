@@ -107,6 +107,12 @@ function dewey_report() {
   // Get the timestamp of when the report was taken
   $output['audited'] = time();
 
+  // Get paths
+  $output['base_url'] = $GLOBALS['base_url'];
+
+  // Get maintenance mode
+  $output['maintenance'] = variable_get('maintenance_mode');
+
   // Get path accesses
   $ignores = array('admin');
   $result = db_query("SELECT path, hits, lastaccess FROM dewey_counter");
@@ -199,9 +205,6 @@ function dewey_report() {
       $output['themes'][$theme->name] = array('version' => $theme->info['version']);
     }
   }
-
-  // Get maintenance mode
-  $output['maintenance'] = variable_get('maintenance_mode');
 
   print drupal_json_output($output);
 }
