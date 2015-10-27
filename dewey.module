@@ -110,6 +110,9 @@ function dewey_report() {
   // Get paths
   $output['base_url'] = $GLOBALS['base_url'];
 
+  // Get Drupal version
+  $output['drupal_core'] = VERSION;
+
   // Get maintenance mode
   $output['maintenance'] = variable_get('maintenance_mode');
 
