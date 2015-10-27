@@ -192,10 +192,17 @@ function dewey_report() {
     }
   }
 
-  // Get all enabled modules
+  // Get all enabled modules and possible schema updates
+  require_once DRUPAL_ROOT . '/includes/install.inc';
+  drupal_load_updates();
   $modules = system_list('module_enabled');
   foreach ($modules as $module => $module_info) {
-    $output['modules'][$module_info->info['project']][$module_info->name] = array('schema' => $module_info->schema_version, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies']);
+    $schemas = drupal_get_schema_versions($module_info->name);
+    $latest_schema = 0;
+    if ($schemas !== FALSE) {
+      $latest_schema = max($schemas);
+    }
+    $output['modules'][$module_info->info['project']][$module_info->name] = array('schema' => $module_info->schema_version, 'latest_schema' => $latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies']);
   }
 
   // Get all custom themes
