@@ -1,15 +1,15 @@
-![Dewey](dewey.png "Dewey")
+![Dewy](dewy.png "Dewy")
 
 ## Installation
 
 * Install via Drush:
 
-		drush dl dewey
-		drush en dewey
+		drush dl dewy
+		drush en dewy
 
 ## Usage
 
-1. [Get a Dewey API key](http://dewey.io).
-2. Enable Dewey reporting for your site via Drush, where api_key is from your Dewey.io account.
+1. [Get a Dewy API key](http://dewy.io).
+2. Enable Dewy reporting for your site via Drush, where api_key is from your Dewy.io account.
 
-		drush dewey-enable api_key
+		drush dewy-enable api_key

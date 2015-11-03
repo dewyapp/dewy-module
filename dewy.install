@@ -2,24 +2,24 @@
 
 /**
  * @file
- * Install and uninstall functions for Dewey
+ * Install and uninstall functions for Dewy
  */
 
 /**
  * Implements hook_uninstall().
  */
-function dewey_uninstall() {
+function dewy_uninstall() {
   // Remove variables.
-  variable_del('dewey_enabled');
-  variable_del('dewey_api_key');
+  variable_del('dewy_enabled');
+  variable_del('dewy_api_key');
 }
 
 /**
  * Implements hook_schema().
  */
-function dewey_schema() {
-  $schema['dewey_counter'] = array(
-    'description' => 'Path access statistics for Dewey.',
+function dewy_schema() {
+  $schema['dewy_counter'] = array(
+    'description' => 'Path access statistics for Dewy.',
     'fields' => array(
       'path' => array(
         'description' => 'The path accessed.',
@@ -29,7 +29,7 @@ function dewey_schema() {
         'default' => '',
       ),
       'hits' => array(
-        'description' => 'The number of times the path has been accessed since last Dewey reset.',
+        'description' => 'The number of times the path has been accessed since last Dewy reset.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,

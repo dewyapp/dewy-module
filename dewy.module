@@ -1,39 +1,39 @@
 <?php
 /**
  * @file
- * Code for the Dewey module
+ * Code for the Dewy module
  */
 
 /**
  * Implements hook_menu()
  */
 
-function dewey_menu() {
+function dewy_menu() {
   $items = array();
 
-  $items['admin/config/system/dewey'] = array(
-    'title' => 'Dewey',
-    'description' => 'Dewey configuration page.',
+  $items['admin/config/system/dewy'] = array(
+    'title' => 'Dewy',
+    'description' => 'Dewy configuration page.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('dewey_config'),
+    'page arguments' => array('dewy_config'),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM,
   );
 
-  $items['admin/reports/dewey'] = array(
-    'title' => 'Dewey report',
-    'description' => 'Information about your site for Dewey.',
-    'page callback' => 'dewey_report',
-    'access callback' => 'dewey_report_access_callback',
+  $items['admin/reports/dewy'] = array(
+    'title' => 'Dewy report',
+    'description' => 'Information about your site for Dewy.',
+    'page callback' => 'dewy_report',
+    'access callback' => 'dewy_report_access_callback',
     'type' => MENU_NORMAL_ITEM,
   );
 
   return $items;
 }
 
-function dewey_page_build(&$page) {
+function dewy_page_build(&$page) {
   $settings = array(
-    'url' => url(drupal_get_path('module', 'dewey').'/php/dewey_counter.php'),
+    'url' => url(drupal_get_path('module', 'dewy').'/php/dewy_counter.php'),
     'data' => array(
       'path' => current_path(),
       'drupal' => DRUPAL_ROOT,
@@ -42,57 +42,57 @@ function dewey_page_build(&$page) {
   $page['content'][] = array(
     '#attached' => array(   
       'js' => array(
-        drupal_get_path('module', 'dewey') . '/js/dewey_counter.js' => array(),
+        drupal_get_path('module', 'dewy') . '/js/dewy_counter.js' => array(),
       ),
     ),
   );
   $page['content']['#attached']['js'][] = array(
-    'data' => array('dewey' => $settings),
+    'data' => array('dewy' => $settings),
     'type' => 'setting',
   );
 }
 
-function dewey_config($form, &$form_state) {
-  $form['dewey_enabled'] = array(
+function dewy_config($form, &$form_state) {
+  $form['dewy_enabled'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Enable Dewey to report on this site'),
-    '#default_value' => variable_get('dewey_enabled', 1),
-    '#description' => t('Enable Dewey to communicate with this site to generate reports for you.'),
+    '#title' => t('Enable Dewy to report on this site'),
+    '#default_value' => variable_get('dewy_enabled', 1),
+    '#description' => t('Enable Dewy to communicate with this site to generate reports for you.'),
   );
-  $form['dewey_api_key'] = array(
+  $form['dewy_api_key'] = array(
     '#type' => 'textfield',
-    '#title' => t('Dewey API key'),
-    '#default_value' => variable_get('dewey_api_key', ''),
+    '#title' => t('Dewy API key'),
+    '#default_value' => variable_get('dewy_api_key', ''),
     '#size' => 30,
     '#maxlength' => 30,
-    '#description' => t('The API key of your Dewey account. This will ensure your site links to your Dewey account. <a href="">Get a Dewey API key</a>.'),
+    '#description' => t('The API key of your Dewy account. This will ensure your site links to your Dewy account. <a href="">Get a Dewy API key</a>.'),
     '#required' => TRUE,
   );
-  $form['#validate'][] = 'dewey_api_key_validate';
+  $form['#validate'][] = 'dewy_api_key_validate';
 
   return system_settings_form($form);
 }
 
-function dewey_api_key_validate(&$elements, &$form_state, $form_id = NULL) {
-  $data = 'api_key='.$form_state['values']['dewey_api_key'].'&site='.$GLOBALS['base_url'];
+function dewy_api_key_validate(&$elements, &$form_state, $form_id = NULL) {
+  $data = 'api_key='.$form_state['values']['dewy_api_key'].'&site='.$GLOBALS['base_url'];
   $options = array(
     'method' => 'POST',
     'data' => $data,
     'timeout' => 15,
     'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
   );
-  $result = drupal_http_request('http://dewey.io/intake', $options);
+  $result = drupal_http_request('http://dewy.io/intake', $options);
   switch($result->code) {
     case '0':
-      form_set_error('dewey_api_key','Dewey API key is not valid.');
+      form_set_error('dewy_api_key','Dewy API key is not valid.');
     default:
-      form_set_error('dewey_api_key','Dewey is unreachable, the API key cannot be verified at this time.');
+      form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
   }
 }
 
-function dewey_report_access_callback() {
-  if (variable_get('dewey_enabled', 0) == 1) {
-    $allowed_viewers = array('127.0.0.1', '::1', gethostbyname("dewey.io"));
+function dewy_report_access_callback() {
+  if (variable_get('dewy_enabled', 0) == 1) {
+    $allowed_viewers = array('127.0.0.1', '::1', gethostbyname("dewy.io"));
     foreach ($allowed_viewers as $viewer) {
       if (ip_address() == $viewer) {
         return TRUE;
@@ -103,7 +103,7 @@ function dewey_report_access_callback() {
   return FALSE;
 }
 
-function dewey_report() {
+function dewy_report() {
   // Get the timestamp of when the report was taken
   $output['audited'] = time();
 
@@ -118,7 +118,7 @@ function dewey_report() {
 
   // Get path accesses
   $ignores = array('admin');
-  $result = db_query("SELECT path, hits, lastaccess FROM dewey_counter");
+  $result = db_query("SELECT path, hits, lastaccess FROM dewy_counter");
   while ($path = $result->fetchAssoc()) {
     foreach ($ignores as $ignore) {
       if (substr($path['path'], 0, strlen($ignore)) != $ignore) {

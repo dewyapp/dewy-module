@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Processes path counts for Dewey
+ * Processes path counts for Dewy
  */
 
 /**
@@ -19,7 +19,7 @@ if (isset($_POST['drupal'])) {
   if (isset($_POST['path'])) {
     $path = $_POST['path'];
   }
-  db_merge('dewey_counter')
+  db_merge('dewy_counter')
     ->key(array('path' => $path))
     ->fields(array(
       'hits' => 1,

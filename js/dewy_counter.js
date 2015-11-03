@@ -3,8 +3,8 @@
     $.ajax({
       type: "POST",
       cache: false,
-      url: Drupal.settings.dewey.url,
-      data: Drupal.settings.dewey.data
+      url: Drupal.settings.dewy.url,
+      data: Drupal.settings.dewy.data
     });
   });
 })(jQuery);
