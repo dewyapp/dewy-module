@@ -104,117 +104,167 @@ function dewy_report_access_callback() {
 }
 
 function dewy_report() {
+
+  // Open stream
+  $stream = new SplFileObject('php://output', 'w');
+  $stream->fwrite('{');
+
   // Get the timestamp of when the report was taken
-  $output['audited'] = time();
+  $stream->fwrite('"audited":'.json_encode(time()).',');
 
   // Get paths
-  $output['base_url'] = $GLOBALS['base_url'];
+  $stream->fwrite('"base_url":'.json_encode($GLOBALS['base_url']).',');
 
   // Get Drupal version
-  $output['drupal_core'] = VERSION;
+  $stream->fwrite('"drupal_core":'.json_encode(VERSION).',');
 
   // Get maintenance mode
-  $output['maintenance'] = variable_get('maintenance_mode');
+  $stream->fwrite('"maintenance":'.json_encode(variable_get('maintenance_mode')).',');
 
   // Get path accesses
+  $stream->fwrite('"traffic":{');
   $ignores = array('admin');
   $result = db_query("SELECT path, hits, lastaccess FROM dewy_counter");
+  $first_row = TRUE;
   while ($path = $result->fetchAssoc()) {
     foreach ($ignores as $ignore) {
       if (substr($path['path'], 0, strlen($ignore)) != $ignore) {
-        $output['traffic'][$path['path']] = array('hits' => $path['hits'], 'last_access' => $path['lastaccess']);
+        if (!$first_row) { 
+          $stream->fwrite(',');
+        } else {
+          $first_row = FALSE;
+        }
+        $stream->fwrite(json_encode($path['path']).':'.json_encode(array('hits' => $path['hits'], 'last_access' => $path['lastaccess'])));
       }
     }
   }
+  $stream->fwrite('},');
 
   // Get the file count and file sizes
+  $stream->fwrite('"files":{');
   $types = array('public', 'private');
-
   $path['public'] = variable_get('file_public_path', conf_path() . '/files');
   $path['private'] = variable_get('file_private_path');
 
+  $first_row = TRUE;
   foreach($types as $type) {
-    $output['files'][$type]['count'] = 0;
-    $output['files'][$type]['size'] = 0;
+    if (!$first_row) { 
+      $stream->fwrite(',');
+    } else {
+      $first_row = FALSE;
+    }
+
+    $count = 0;
+    $size = 0;
 
     if (is_dir($path[$type])) {
       $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path[$type], RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
       $filelist = array();
       foreach($iterator as $file) {
         if (!$file->isDir()) {
-          $output['files'][$type]['count']++;
-          $output['files'][$type]['size'] += $file->getSize();
+          $count++;
+          $size += $file->getSize();
         }
       }
     }
+    $stream->fwrite(json_encode($type).':'.json_encode(array('count' => $count, 'size' => $size)));
   }
+  $stream->fwrite('},');
 
   // Get all users, roles and last signons
-  $result = db_query("SELECT users.name AS name, mail, access AS last_access, status, role.name AS role FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid");
+  $stream->fwrite('"users":{');
+  $result = db_query("SELECT users.name AS name, mail, access AS last_access, status, GROUP_CONCAT(role.name SEPARATOR ',') AS roles FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid GROUP BY name");
+  $first_row = TRUE;
   while ($user = $result->fetchAssoc()) {
-    if (isset($output['users'][$user['name']] )) {
-      $output['users'][$user['name']]['role'][] = $user['role'];
+    if (!$first_row) { 
+      $stream->fwrite(',');
     } else {
-      $output['users'][$user['name']] = $user;
-      $output['users'][$user['name']]['role'] = array($user['role']);
+      $first_row = FALSE;
     }
+    $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'last_access' => $user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
   }
+  $stream->fwrite('},');
 
+  // Get all content
+  $stream->fwrite('"content":{');
   // Get all node content
-  $result = db_query("SELECT nid, type, created, changed FROM node");
-  while ($node = $result->fetchAssoc()) {
-    $output['content']['nodes'][$node['nid']] = array('created' => $node['created'], 'changed' => $node['changed'], 'type' => $node['type']);
-  }
-
+  $stream->fwrite('"nodes":{');
   $fields = field_info_fields();
-  foreach ($fields as $field) {
-    if ($field['module'] == 'text') {
-      $table = _field_sql_storage_tablename($field);
-      $column = _field_sql_storage_columnname($field['field_name'], 'value');
-      $result = db_select($table, 'field')
-      ->fields('field', array($column, 'entity_id'))
-      ->condition('entity_type', 'node', '=')
-      ->execute();
+  $result = db_query("SELECT nid, type, created, changed FROM node");
+  $first_row = TRUE;
+  while ($node = $result->fetchAssoc()) {
+    if (!$first_row) { 
+      $stream->fwrite(',');
+    } else {
+      $first_row = FALSE;
     }
-    while ($field = $result->fetchAssoc()) {
-      $words = preg_split("/[\s,]+/", strtolower($field[$column]));
-      foreach ($words as $word) {
-        $output['content']['nodes'][$field['entity_id']]['words'][] = $word;
+    // See what text field data is associate with this node
+    $content = array();
+    foreach ($fields as $field) {
+      if ($field['module'] == 'text') {
+        $table = _field_sql_storage_tablename($field);
+        $column = _field_sql_storage_columnname($field['field_name'], 'value');
+        $field_result = db_select($table, 'field')
+        ->fields('field', array($column, 'entity_id'))
+        ->condition('entity_type', 'node', '=')
+        ->condition('entity_id', $node['nid'], '=')
+        ->execute();
+        while ($field = $field_result->fetchAssoc()) {
+          $content[$column] = $field[$column];
+        }
       }
     }
+    $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => $node['created'], 'changed' => $node['changed'], 'type' => $node['type'], 'content' => $content)));
   }
-
+  $stream->fwrite('},');
   // Get all block content
+  $stream->fwrite('"blocks":{');
   $result = db_select('block_custom', 'block')
   ->fields('block', array('bid', 'body'))
   ->execute();
+  $first_row = TRUE;
   while ($block = $result->fetchAssoc()) {
-    $words = preg_split("/[\s,]+/", strtolower($block['body']));
-    foreach ($words as $word) {
-      $output['content']['blocks'][$block['bid']]['words'][] = $word;
+    if (!$first_row) { 
+      $stream->fwrite(',');
+    } else {
+      $first_row = FALSE;
     }
+    $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
   }
+  $stream->fwrite('}},');
 
   // Get all enabled modules and possible schema updates
+  $stream->fwrite('"modules":{');
   require_once DRUPAL_ROOT . '/includes/install.inc';
   drupal_load_updates();
   $modules = system_list('module_enabled');
+  $first_row = TRUE;
   foreach ($modules as $module => $module_info) {
+    if (!$first_row) { 
+      $stream->fwrite(',');
+    } else {
+      $first_row = FALSE;
+    }
     $schemas = drupal_get_schema_versions($module_info->name);
     $latest_schema = 0;
     if ($schemas !== FALSE) {
       $latest_schema = max($schemas);
     }
-    $output['modules'][$module_info->info['project']][$module_info->name] = array('schema' => $module_info->schema_version, 'latest_schema' => $latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies']);
+    $stream->fwrite(json_encode($module_info->name).':'.json_encode(array('project' => $module_info->info['project'], 'schema' => $module_info->schema_version, 'latest_schema' => $latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies'])));
   }
+  $stream->fwrite('},');
 
   // Get all custom themes
+  $stream->fwrite('"themes":{');
   $themes = list_themes(TRUE);
   foreach ($themes as $theme) {
     if ($theme->info['package'] != 'Core') {
-      $output['themes'][$theme->name] = array('version' => $theme->info['version']);
+      $stream->fwrite(json_encode($theme->name).':'.json_encode(array('version' => $theme->info['version'])));
     }
   }
+  $stream->fwrite('}');
 
-  print drupal_json_output($output);
+  // Close stream
+  $stream->fwrite('}');
+  $tream = null;
 }
