@@ -1,5 +1,7 @@
 ![Dewy](dewy.png "Dewy")
 
+# Dewy Drupal module
+
 ## Installation
 
 * Install via Drush:
