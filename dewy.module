@@ -109,6 +109,9 @@ function dewy_report() {
   $stream = new SplFileObject('php://output', 'w');
   $stream->fwrite('{');
 
+  // Get title
+  $stream->fwrite('"title":'.json_encode(variable_get('site_name')).',');
+
   // Get the timestamp of when the report was taken
   $stream->fwrite('"audited":'.json_encode(time()).',');
 
