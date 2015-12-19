@@ -121,9 +121,9 @@ function dewy_report() {
   // Get Drupal version
   $stream->fwrite('"drupal_core":'.json_encode(VERSION).',');
 
-  // Get maintenance mode
-  $stream->fwrite('"maintenance":'.json_encode(variable_get('maintenance_mode')).',');
-
+  // Get PHP version
+  $stream->fwrite('"php_version":'.json_encode(PHP_VERSION).',');
+  
   // Get path accesses
   $stream->fwrite('"traffic":{');
   $ignores = array('admin');
@@ -173,6 +173,11 @@ function dewy_report() {
     $stream->fwrite(json_encode($type).':'.json_encode(array('count' => $count, 'size' => $size)));
   }
   $stream->fwrite('},');
+
+  // Get database file size
+  $database = $GLOBALS['databases']['default']['default']['database'];
+  $db_size = db_query("SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) as 'mb' FROM information_schema.tables WHERE table_schema = '".$database."';")->fetchField();
+  $stream->fwrite('"db_size":'.json_encode($db_size).',');
 
   // Get all users, roles and last signons
   $stream->fwrite('"users":{');
@@ -260,10 +265,30 @@ function dewy_report() {
   // Get all custom themes
   $stream->fwrite('"themes":{');
   $themes = list_themes(TRUE);
+  $first_row = TRUE;
   foreach ($themes as $theme) {
     if ($theme->info['package'] != 'Core') {
+      if (!$first_row) { 
+        $stream->fwrite(',');
+      } else {
+        $first_row = FALSE;
+      }
       $stream->fwrite(json_encode($theme->name).':'.json_encode(array('version' => $theme->info['version'])));
     }
+  }
+  $stream->fwrite('},');
+
+  // Get all variables
+  $stream->fwrite('"variables":{');
+  $result = db_query("SELECT name FROM variable");
+  $first_row = TRUE;
+  while ($variable = $result->fetchAssoc()) {
+    if (!$first_row) { 
+      $stream->fwrite(',');
+    } else {
+      $first_row = FALSE;
+    }
+    $stream->fwrite(json_encode($variable['name']).':'.json_encode(variable_get($variable['name'])));
   }
   $stream->fwrite('}');
 
