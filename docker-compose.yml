@@ -1,0 +1,12 @@
+mysql:
+  image: mysql:latest
+  ports:
+  - "3306:3306"
+  environment:
+  - MYSQL_ROOT_PASSWORD=password
+drupal:
+  build: .
+  ports:
+  - "8080:80"
+  links:
+  - mysql
