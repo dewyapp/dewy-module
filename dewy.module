@@ -193,8 +193,6 @@ function dewy_report() {
   }
   $stream->fwrite('},');
 
-  // Get all content
-  $stream->fwrite('"content":{');
   // Get all node content
   $stream->fwrite('"nodes":{');
   $fields = field_info_fields();
@@ -239,7 +237,7 @@ function dewy_report() {
     }
     $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
   }
-  $stream->fwrite('}},');
+  $stream->fwrite('},');
 
   // Get all enabled modules and possible schema updates
   $stream->fwrite('"modules":{');
