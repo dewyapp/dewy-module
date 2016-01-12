@@ -86,15 +86,13 @@ function dewy_config($form, &$form_state) {
 }
 
 function dewy_api_key_validate(&$elements, &$form_state, $form_id = NULL) {
-  $data = json_encode(
-    array(
-      'api_key' => $form_state['values']['dewy_api_key'],
-      'site' => $GLOBALS['base_url'],
-      'enabled' => $form_state['values']['dewy_enabled'],
-      'read_users' => $form_state['values']['dewy_users'],
-      'read_content' => $form_state['values']['dewy_content']
-    )
-  );
+  $data = 
+      'api_key='.$form_state['values']['dewy_api_key'].'&'.
+      'base_url='.$GLOBALS['base_url'].'&'.
+      'enabled='.$form_state['values']['dewy_enabled'].'&'.
+      'read_users='.$form_state['values']['dewy_users'].'&'.
+      'read_content='.$form_state['values']['dewy_content'];
+
   $options = array(
     'method' => 'POST',
     'data' => $data,
