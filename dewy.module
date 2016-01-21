@@ -75,8 +75,8 @@ function dewy_config($form, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('Dewy API key'),
     '#default_value' => variable_get('dewy_api_key', ''),
-    '#size' => 30,
-    '#maxlength' => 30,
+    '#size' => 40,
+    '#maxlength' => 36,
     '#description' => t('The API key of your Dewy account. This will ensure your site links to your Dewy account. <a href="">Get a Dewy API key</a>.'),
     '#required' => TRUE,
   );
@@ -87,8 +87,8 @@ function dewy_config($form, &$form_state) {
 
 function dewy_api_key_validate(&$elements, &$form_state, $form_id = NULL) {
   $data = 
-      'api_key='.$form_state['values']['dewy_api_key'].'&'.
-      'base_url='.$GLOBALS['base_url'].'&'.
+      'apikey='.$form_state['values']['dewy_api_key'].'&'.
+      'baseurl='.$GLOBALS['base_url'].'&'.
       'enabled='.$form_state['values']['dewy_enabled'].'&'.
       'read_users='.$form_state['values']['dewy_users'].'&'.
       'read_content='.$form_state['values']['dewy_content'];
@@ -101,11 +101,9 @@ function dewy_api_key_validate(&$elements, &$form_state, $form_id = NULL) {
   );
   $result = drupal_http_request('http://api.dewy.io/1.0/sites', $options);
   if ($result->code == '200') {
-    if ($result->data == '0') {
-      form_set_error('dewy_api_key','Dewy API key is not valid.');
-    }
-    else {
-
+    $results = drupal_json_decode($result->data);
+    if ($results['status'] == 'error') {
+      form_set_error('dewy_api_key', $results['message']);
     }
   }
   else {
