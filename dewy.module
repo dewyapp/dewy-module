@@ -57,7 +57,7 @@ function dewy_config($form, &$form_state) {
     '#type' => 'checkbox',
     '#title' => t('Enable Dewy to report on this site'),
     '#default_value' => variable_get('dewy_enabled', 1),
-    '#description' => t('Enable Dewy to communicate with this site to generate reports for you.'),
+    '#description' => t('Enable Dewy to communicate with this site. Turning this off prevents Dewy from monitoring your site.'),
   );
   $form['dewy_users'] = array(
     '#type' => 'checkbox',
@@ -77,17 +77,25 @@ function dewy_config($form, &$form_state) {
     '#default_value' => variable_get('dewy_api_key', ''),
     '#size' => 40,
     '#maxlength' => 36,
-    '#description' => t('The API key of your Dewy account. This will ensure your site links to your Dewy account. <a href="">Get a Dewy API key</a>.'),
+    '#description' => t('The API key of your Dewy account. This is required to link this site to your Dewy account. <a href="http://dewy.io">Get a Dewy API key</a>.'),
     '#required' => TRUE,
   );
-  $form['#validate'][] = 'dewy_api_key_validate';
+  $form['#validate'][] = 'dewy_validate';
 
   return system_settings_form($form);
 }
 
-function dewy_api_key_validate(&$elements, &$form_state, $form_id = NULL) {
+function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
+  if (!variable_get('dewy_enabled', 0) && $form_state['values']['dewy_enabled'] != variable_get('dewy_enabled', 0)) {
+    DewyToken::createToken();
+  } 
+  else if (variable_get('dewy_enabled', 0) && $form_state['values']['dewy_enabled'] != variable_get('dewy_enabled', 0)) {
+    DewyToken::deleteToken();
+  }
+
   $data = 
       'apikey='.$form_state['values']['dewy_api_key'].'&'.
+      'token='.variable_get('dewy_token').'&'.
       'baseurl='.$GLOBALS['base_url'].'&'.
       'enabled='.$form_state['values']['dewy_enabled'].'&'.
       'read_users='.$form_state['values']['dewy_users'].'&'.
@@ -100,27 +108,27 @@ function dewy_api_key_validate(&$elements, &$form_state, $form_id = NULL) {
     'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
   );
   $result = drupal_http_request('http://api.dewy.io/1.0/sites', $options);
-  if ($result->code == '200') {
-    $results = drupal_json_decode($result->data);
-    if ($results['status'] == 'error') {
-      form_set_error('dewy_api_key', $results['message']);
+  if ($result->code != '200') {
+    if ($result->code == '500' || $result->code == '503') {
+      form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
     }
-  }
-  else {
-    form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
+    else {
+      form_set_error('dewy_api_key', $result->data);
+    }
   }
 }
 
 function dewy_report_access_callback() {
-  if (variable_get('dewy_enabled', 0) == 1) {
-    $allowed_viewers = array('127.0.0.1', '::1', gethostbyname("dewy.io"));
+  if (variable_get('dewy_enabled', 0) && variable_get('dewy_token', 0)) {
+    $allowed_viewers = array('127.0.0.1', '::1', gethostbyname('dewy.io'));
     foreach ($allowed_viewers as $viewer) {
       if (ip_address() == $viewer) {
-        return TRUE;
+        if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
+          return TRUE;
+        }
       }
     }
   }
-
   return FALSE;
 }
 

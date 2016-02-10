@@ -3,4 +3,5 @@ description = Provides the Dewy service with information about your site.
 core = 7.x
 package = Dewy
 configure = admin/config/system/dewy
+files[] = dewy_token.inc
 version = 7.x-0.1

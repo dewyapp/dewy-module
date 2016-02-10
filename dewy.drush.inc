@@ -9,7 +9,7 @@ function dewy_drush_command() {
       'api_key'    => 'API key for your Dewy account.',
     ),
     'examples' => array(
-      'drush dewy-enable P17G823F724A98238QT' => 'Enable site reporting to your Dewy account with your API key.',
+      'drush dewy-enable api_key' => 'Enable site reporting to your Dewy account with your API key.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_DATABASE,
   );

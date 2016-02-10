@@ -11,7 +11,10 @@
 function dewy_uninstall() {
   // Remove variables.
   variable_del('dewy_enabled');
+  variable_del('dewy_users');
+  variable_del('dewy_content');
   variable_del('dewy_api_key');
+  variable_del('dewy_token');
 }
 
 /**
