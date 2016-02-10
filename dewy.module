@@ -117,10 +117,10 @@ function dewy_register($apikey, $enabled, $users, $content) {
     if (is_null($users)) $users = variable_get('dewy_users');
     if (is_null($content)) $content = variable_get('dewy_content');
 
-    if (!variable_get('dewy_enabled', 0) && $enabled != variable_get('dewy_enabled', 0)) {
+    if ($enabled && !variable_get('dewy_token', 0)) {
         DewyToken::createToken();
     } 
-    else if (variable_get('dewy_enabled', 0) && $enabled != variable_get('dewy_enabled', 0)) {
+    else if (!$enabled) {
         DewyToken::deleteToken();
     }
 
