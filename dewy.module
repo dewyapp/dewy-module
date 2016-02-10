@@ -9,332 +9,142 @@
  */
 
 function dewy_menu() {
-  $items = array();
+    $items = array();
 
-  $items['admin/config/system/dewy'] = array(
-    'title' => 'Dewy',
-    'description' => 'Dewy configuration page.',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('dewy_config'),
-    'access arguments' => array('administer site configuration'),
-    'type' => MENU_NORMAL_ITEM,
-  );
+    $items['admin/config/system/dewy'] = array(
+        'title' => 'Dewy',
+        'description' => 'Dewy configuration page.',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('dewy_config'),
+        'access arguments' => array('administer site configuration'),
+        'type' => MENU_NORMAL_ITEM,
+    );
 
-  $items['admin/reports/dewy'] = array(
-    'title' => 'Dewy report',
-    'description' => 'Information about your site for Dewy.',
-    'page callback' => 'dewy_report',
-    'access callback' => 'dewy_report_access_callback',
-    'type' => MENU_NORMAL_ITEM,
-  );
+    $items['admin/reports/dewy'] = array(
+        'title' => 'Dewy report',
+        'description' => 'Information about your site for Dewy.',
+        'file' => 'dewy_report.inc',
+        'page callback' => 'dewy_report',
+        'access callback' => 'dewy_report_access_callback',
+        'type' => MENU_NORMAL_ITEM,
+    );
 
-  return $items;
-}
-
-function dewy_page_build(&$page) {
-  $settings = array(
-    'url' => url(drupal_get_path('module', 'dewy').'/php/dewy_counter.php'),
-    'data' => array(
-      'path' => current_path(),
-      'drupal' => DRUPAL_ROOT,
-    ),
-  );
-  $page['content'][] = array(
-    '#attached' => array(   
-      'js' => array(
-        drupal_get_path('module', 'dewy') . '/js/dewy_counter.js' => array(),
-      ),
-    ),
-  );
-  $page['content']['#attached']['js'][] = array(
-    'data' => array('dewy' => $settings),
-    'type' => 'setting',
-  );
-}
-
-function dewy_config($form, &$form_state) {
-  $form['dewy_enabled'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Enable Dewy to report on this site'),
-    '#default_value' => variable_get('dewy_enabled', 1),
-    '#description' => t('Enable Dewy to communicate with this site. Turning this off prevents Dewy from monitoring your site.'),
-  );
-  $form['dewy_users'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Include usernames and emails'),
-    '#default_value' => variable_get('dewy_users', 1),
-    '#description' => t('Allow Dewy to pull username and email data.'),
-  );
-  $form['dewy_content'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Include content'),
-    '#default_value' => variable_get('dewy_content', 1),
-    '#description' => t('Allow Dewy to pull content data.'),
-  );
-  $form['dewy_api_key'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Dewy API key'),
-    '#default_value' => variable_get('dewy_api_key', ''),
-    '#size' => 40,
-    '#maxlength' => 36,
-    '#description' => t('The API key of your Dewy account. This is required to link this site to your Dewy account. <a href="http://dewy.io">Get a Dewy API key</a>.'),
-    '#required' => TRUE,
-  );
-  $form['#validate'][] = 'dewy_validate';
-
-  return system_settings_form($form);
-}
-
-function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
-  dewy_register(
-    $form_state['values']['dewy_api_key'],
-    $form_state['values']['dewy_enabled'],
-    $form_state['values']['dewy_users'],
-    $form_state['values']['dewy_content']);
-}
-
-function dewy_register($apikey, $enabled, $users, $content) {
-  global $base_url;
-
-  if (is_null($apikey)) $apikey = variable_get('dewy_api_key');
-  if (is_null($enabled)) $enabled = variable_get('dewy_enabled');
-  if (is_null($users)) $users = variable_get('dewy_users');
-  if (is_null($content)) $content = variable_get('dewy_content');
-
-  if (!variable_get('dewy_enabled', 0) && $enabled != variable_get('dewy_enabled', 0)) {
-    DewyToken::createToken();
-  } 
-  else if (variable_get('dewy_enabled', 0) && $enabled != variable_get('dewy_enabled', 0)) {
-    DewyToken::deleteToken();
-  }
-
-  $data = 
-      'apikey='.$apikey.'&'.
-      'token='.variable_get('dewy_token').'&'.
-      'baseurl='.$base_url.'&'.
-      'enabled='.$enabled.'&'.
-      'read_users='.$users.'&'.
-      'read_content='.$content;
-
-  $options = array(
-    'method' => 'POST',
-    'data' => $data,
-    'timeout' => 15,
-    'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
-  );
-  $result = drupal_http_request('http://api.dewy.io/1.0/sites', $options);
-  if ($result->code != '200') {
-    if ($result->code == '500' || $result->code == '503') {
-      form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
-    }
-    else {
-      form_set_error('dewy_api_key', $result->data);
-    }
-  }
+    return $items;
 }
 
 function dewy_report_access_callback() {
-  if (variable_get('dewy_enabled', 0) && variable_get('dewy_token', 0)) {
-    $allowed_viewers = array('127.0.0.1', '::1', gethostbyname('dewy.io'));
-    foreach ($allowed_viewers as $viewer) {
-      if (ip_address() == $viewer) {
-        if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
-          return TRUE;
+    if (variable_get('dewy_enabled', 0) && variable_get('dewy_token', 0)) {
+        $allowed_viewers = array('127.0.0.1', '::1', gethostbyname('dewy.io'));
+        foreach ($allowed_viewers as $viewer) {
+            if (ip_address() == $viewer) {
+                if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
+                    return TRUE;
+                }
+            }
         }
-      }
     }
-  }
-  return FALSE;
+    return FALSE;
 }
 
-function dewy_report() {
+function dewy_page_build(&$page) {
+    $settings = array(
+        'url' => url(drupal_get_path('module', 'dewy').'/php/dewy_counter.php'),
+        'data' => array(
+            'path' => current_path(),
+            'drupal' => DRUPAL_ROOT,
+        ),
+    );
+    $page['content'][] = array(
+        '#attached' => array(     
+            'js' => array(
+                drupal_get_path('module', 'dewy') . '/js/dewy_counter.js' => array(),
+            ),
+        ),
+    );
+    $page['content']['#attached']['js'][] = array(
+        'data' => array('dewy' => $settings),
+        'type' => 'setting',
+    );
+}
 
-  // Open stream
-  $stream = new SplFileObject('php://output', 'w');
-  $stream->fwrite('{');
+function dewy_config($form, &$form_state) {
+    $form['dewy_enabled'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Enable Dewy to report on this site'),
+        '#default_value' => variable_get('dewy_enabled', 1),
+        '#description' => t('Enable Dewy to communicate with this site. Turning this off prevents Dewy from monitoring your site.'),
+    );
+    $form['dewy_users'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Include usernames and emails'),
+        '#default_value' => variable_get('dewy_users', 1),
+        '#description' => t('Allow Dewy to pull username and email data.'),
+    );
+    $form['dewy_content'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Include content'),
+        '#default_value' => variable_get('dewy_content', 1),
+        '#description' => t('Allow Dewy to pull content data.'),
+    );
+    $form['dewy_api_key'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Dewy API key'),
+        '#default_value' => variable_get('dewy_api_key', ''),
+        '#size' => 40,
+        '#maxlength' => 36,
+        '#description' => t('The API key of your Dewy account. This is required to link this site to your Dewy account. <a href="http://dewy.io">Get a Dewy API key</a>.'),
+        '#required' => TRUE,
+    );
+    $form['#validate'][] = 'dewy_validate';
 
-  // Get title
-  $stream->fwrite('"title":'.json_encode(variable_get('site_name')).',');
+    return system_settings_form($form);
+}
 
-  // Get the timestamp of when the report was taken
-  $stream->fwrite('"audited":'.json_encode(time()).',');
+function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
+    dewy_register(
+        $form_state['values']['dewy_api_key'],
+        $form_state['values']['dewy_enabled'],
+        $form_state['values']['dewy_users'],
+        $form_state['values']['dewy_content']
+    );
+}
 
-  // Get paths
-  $stream->fwrite('"base_url":'.json_encode($GLOBALS['base_url']).',');
+function dewy_register($apikey, $enabled, $users, $content) {
+    global $base_url;
 
-  // Get Drupal version
-  $stream->fwrite('"drupal_core":'.json_encode(VERSION).',');
+    if (is_null($apikey)) $apikey = variable_get('dewy_api_key');
+    if (is_null($enabled)) $enabled = variable_get('dewy_enabled');
+    if (is_null($users)) $users = variable_get('dewy_users');
+    if (is_null($content)) $content = variable_get('dewy_content');
 
-  // Get PHP version
-  $stream->fwrite('"php_version":'.json_encode(PHP_VERSION).',');
-  
-  // Get path accesses
-  $stream->fwrite('"traffic":{');
-  $ignores = array('admin');
-  $result = db_query("SELECT path, hits, lastaccess FROM dewy_counter");
-  $first_row = TRUE;
-  while ($path = $result->fetchAssoc()) {
-    foreach ($ignores as $ignore) {
-      if (substr($path['path'], 0, strlen($ignore)) != $ignore) {
-        if (!$first_row) { 
-          $stream->fwrite(',');
-        } else {
-          $first_row = FALSE;
+    if (!variable_get('dewy_enabled', 0) && $enabled != variable_get('dewy_enabled', 0)) {
+        DewyToken::createToken();
+    } 
+    else if (variable_get('dewy_enabled', 0) && $enabled != variable_get('dewy_enabled', 0)) {
+        DewyToken::deleteToken();
+    }
+
+    $data = 
+            'apikey='.$apikey.'&'.
+            'token='.variable_get('dewy_token').'&'.
+            'baseurl='.$base_url.'&'.
+            'enabled='.$enabled.'&'.
+            'read_users='.$users.'&'.
+            'read_content='.$content;
+
+    $options = array(
+        'method' => 'POST',
+        'data' => $data,
+        'timeout' => 15,
+        'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+    );
+    $result = drupal_http_request('http://api.dewy.io/1.0/sites', $options);
+    if ($result->code != '200') {
+        if ($result->code == '500' || $result->code == '503') {
+            form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
         }
-        $stream->fwrite(json_encode($path['path']).':'.json_encode(array('hits' => $path['hits'], 'last_access' => $path['lastaccess'])));
-      }
-    }
-  }
-  $stream->fwrite('},');
-
-  // Get the file count and file sizes
-  $stream->fwrite('"files":{');
-  $types = array('public', 'private');
-  $path['public'] = variable_get('file_public_path', conf_path() . '/files');
-  $path['private'] = variable_get('file_private_path');
-
-  $first_row = TRUE;
-  foreach($types as $type) {
-    if (!$first_row) { 
-      $stream->fwrite(',');
-    } else {
-      $first_row = FALSE;
-    }
-
-    $count = 0;
-    $size = 0;
-
-    if (is_dir($path[$type])) {
-      $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path[$type], RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
-      $filelist = array();
-      foreach($iterator as $file) {
-        if (!$file->isDir()) {
-          $count++;
-          $size += $file->getSize();
+        else {
+            form_set_error('dewy_api_key', $result->data);
         }
-      }
     }
-    $stream->fwrite(json_encode($type).':'.json_encode(array('count' => $count, 'size' => $size)));
-  }
-  $stream->fwrite('},');
-
-  // Get database file size
-  $database = $GLOBALS['databases']['default']['default']['database'];
-  $db_size = db_query("SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) as 'mb' FROM information_schema.tables WHERE table_schema = '".$database."';")->fetchField();
-  $stream->fwrite('"db_size":'.json_encode($db_size).',');
-
-  // Get all users, roles and last signons
-  $stream->fwrite('"users":{');
-  $result = db_query("SELECT users.name AS name, mail, access AS last_access, status, GROUP_CONCAT(role.name SEPARATOR ',') AS roles FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid GROUP BY name");
-  $first_row = TRUE;
-  while ($user = $result->fetchAssoc()) {
-    if (!$first_row) { 
-      $stream->fwrite(',');
-    } else {
-      $first_row = FALSE;
-    }
-    $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'last_access' => $user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
-  }
-  $stream->fwrite('},');
-
-  // Get all node content
-  $stream->fwrite('"nodes":{');
-  $fields = field_info_fields();
-  $result = db_query("SELECT nid, type, created, changed FROM node");
-  $first_row = TRUE;
-  while ($node = $result->fetchAssoc()) {
-    if (!$first_row) { 
-      $stream->fwrite(',');
-    } else {
-      $first_row = FALSE;
-    }
-    // See what text field data is associate with this node
-    $content = array();
-    foreach ($fields as $field) {
-      if ($field['module'] == 'text') {
-        $table = _field_sql_storage_tablename($field);
-        $column = _field_sql_storage_columnname($field['field_name'], 'value');
-        $field_result = db_select($table, 'field')
-        ->fields('field', array($column, 'entity_id'))
-        ->condition('entity_type', 'node', '=')
-        ->condition('entity_id', $node['nid'], '=')
-        ->execute();
-        while ($field = $field_result->fetchAssoc()) {
-          $content[$column] = $field[$column];
-        }
-      }
-    }
-    $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => $node['created'], 'changed' => $node['changed'], 'type' => $node['type'], 'content' => $content)));
-  }
-  $stream->fwrite('},');
-  // Get all block content
-  $stream->fwrite('"blocks":{');
-  $result = db_select('block_custom', 'block')
-  ->fields('block', array('bid', 'body'))
-  ->execute();
-  $first_row = TRUE;
-  while ($block = $result->fetchAssoc()) {
-    if (!$first_row) { 
-      $stream->fwrite(',');
-    } else {
-      $first_row = FALSE;
-    }
-    $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
-  }
-  $stream->fwrite('},');
-
-  // Get all enabled modules and possible schema updates
-  $stream->fwrite('"modules":{');
-  require_once DRUPAL_ROOT . '/includes/install.inc';
-  drupal_load_updates();
-  $modules = system_list('module_enabled');
-  $first_row = TRUE;
-  foreach ($modules as $module => $module_info) {
-    if (!$first_row) { 
-      $stream->fwrite(',');
-    } else {
-      $first_row = FALSE;
-    }
-    $schemas = drupal_get_schema_versions($module_info->name);
-    $latest_schema = 0;
-    if ($schemas !== FALSE) {
-      $latest_schema = max($schemas);
-    }
-    $stream->fwrite(json_encode($module_info->name).':'.json_encode(array('project' => $module_info->info['project'], 'schema' => $module_info->schema_version, 'latest_schema' => $latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies'])));
-  }
-  $stream->fwrite('},');
-
-  // Get all custom themes
-  $stream->fwrite('"themes":{');
-  $themes = list_themes(TRUE);
-  $first_row = TRUE;
-  foreach ($themes as $theme) {
-    if ($theme->info['package'] != 'Core') {
-      if (!$first_row) { 
-        $stream->fwrite(',');
-      } else {
-        $first_row = FALSE;
-      }
-      $stream->fwrite(json_encode($theme->name).':'.json_encode(array('version' => $theme->info['version'])));
-    }
-  }
-  $stream->fwrite('},');
-
-  // Get all variables
-  $stream->fwrite('"variables":{');
-  $result = db_query("SELECT name FROM variable");
-  $first_row = TRUE;
-  while ($variable = $result->fetchAssoc()) {
-    if (!$first_row) { 
-      $stream->fwrite(',');
-    } else {
-      $first_row = FALSE;
-    }
-    $stream->fwrite(json_encode($variable['name']).':'.json_encode(variable_get($variable['name'])));
-  }
-  $stream->fwrite('}');
-
-  // Close stream
-  $stream->fwrite('}');
-  $tream = null;
 }

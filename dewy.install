@@ -9,46 +9,46 @@
  * Implements hook_uninstall().
  */
 function dewy_uninstall() {
-  // Remove variables.
-  variable_del('dewy_enabled');
-  variable_del('dewy_users');
-  variable_del('dewy_content');
-  variable_del('dewy_api_key');
-  variable_del('dewy_token');
+    // Remove variables.
+    variable_del('dewy_enabled');
+    variable_del('dewy_users');
+    variable_del('dewy_content');
+    variable_del('dewy_api_key');
+    variable_del('dewy_token');
 }
 
 /**
  * Implements hook_schema().
  */
 function dewy_schema() {
-  $schema['dewy_counter'] = array(
-    'description' => 'Path access statistics for Dewy.',
-    'fields' => array(
-      'path' => array(
-        'description' => 'The path accessed.',
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-        'default' => '',
-      ),
-      'hits' => array(
-        'description' => 'The number of times the path has been accessed since last Dewy reset.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'size' => 'big',
-      ),
-      'lastaccess' => array(
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
-        'description' => 'Timestamp of last access.',
-      ),
-    ),
-    'primary key' => array('path'),
-  );
+    $schema['dewy_counter'] = array(
+        'description' => 'Path access statistics for Dewy.',
+        'fields' => array(
+            'path' => array(
+                'description' => 'The path accessed.',
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => TRUE,
+                'default' => '',
+            ),
+            'hits' => array(
+                'description' => 'The number of times the path has been accessed since last Dewy reset.',
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+                'default' => 0,
+                'size' => 'big',
+            ),
+            'lastaccess' => array(
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+                'default' => 0,
+                'description' => 'Timestamp of last access.',
+            ),
+        ),
+        'primary key' => array('path'),
+    );
 
-  return $schema;
+    return $schema;
 }
