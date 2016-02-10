@@ -8,8 +8,20 @@ function dewy_drush_command() {
     'arguments' => array(
       'api_key'    => 'API key for your Dewy account.',
     ),
+    'options' => array(
+      'read_users' => '',
+      'read_content' => '',
+    ),
     'examples' => array(
-      'drush dewy-enable api_key' => 'Enable site reporting to your Dewy account with your API key.',
+      'drush dewy-enable api_key' => 'Enables site reporting to your Dewy account with your API key.',
+    ),
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_DATABASE,
+  );
+
+  $items['dewy-disable'] = array(
+    'description' => dt('Disable site reporting to Dewy.'),
+    'examples' => array(
+      'drush dewy-disable' => 'Disables site reporting to Dewy.',
     ),
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_DATABASE,
   );
@@ -26,5 +38,9 @@ function drush_dewy_enable_validate() {
 
 function drush_dewy_enable() {
   list($api_key) = func_get_args();
-	drush_log('Enabled site reporting to Dewy.', 'success');
+  dewy_register($api_key, 1, 1, 1);
+}
+
+function drush_dewy_disable() {
+  dewy_register(null, 0, null, null);
 }
