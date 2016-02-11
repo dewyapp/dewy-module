@@ -32,6 +32,14 @@ function dewy_menu() {
     return $items;
 }
 
+function dewy_menu_site_status_alter(&$menu_site_status, $path) {
+    if ($menu_site_status == MENU_SITE_OFFLINE && user_is_anonymous() ) {
+        if ($path == 'admin/reports/dewy') {
+            $menu_site_status = MENU_SITE_ONLINE;
+        }
+    }
+}
+
 function dewy_report_access_callback() {
     if (variable_get('dewy_enabled', 0) && variable_get('dewy_token', 0)) {
         $allowed_viewers = array('127.0.0.1', '::1', gethostbyname('dewy.io'));
