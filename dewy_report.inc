@@ -8,9 +8,6 @@ function dewy_report() {
     // Get title
     $stream->fwrite('"title":'.json_encode(variable_get('site_name')).',');
 
-    // Get the timestamp of when the report was taken
-    $stream->fwrite('"audited":'.json_encode(time()).',');
-
     // Get paths
     $stream->fwrite('"base_url":'.json_encode($GLOBALS['base_url']).',');
 
