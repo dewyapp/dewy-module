@@ -119,7 +119,7 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
     );
     $result = drupal_http_request($base_url, $options);
     if ($result->code != '200') {
-        form_set_error('dewy_api_key','This site is not reachable at the base_url provided ('.$base_url.'). The base_url can be specified in this site\'s settings.php file, or if using drush, the \'--uri=SITE\' flag.');
+        form_set_error('dewy_api_key','This site is not reachable at the base_url provided ('.$base_url.'). The base_url can be specified in this site\'s settings.php file, or if using Drush, the \'--uri=SITE\' flag.');
     }
     else {
         // Attempt to register the site with Dewy
