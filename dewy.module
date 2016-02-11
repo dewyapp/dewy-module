@@ -101,36 +101,22 @@ function dewy_config($form, &$form_state) {
 }
 
 function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
-    dewy_register(
-        $form_state['values']['dewy_api_key'],
-        $form_state['values']['dewy_enabled'],
-        $form_state['values']['dewy_users'],
-        $form_state['values']['dewy_content']
-    );
-}
-
-function dewy_register($apikey, $enabled, $users, $content) {
     global $base_url;
 
-    if (is_null($apikey)) $apikey = variable_get('dewy_api_key');
-    if (is_null($enabled)) $enabled = variable_get('dewy_enabled');
-    if (is_null($users)) $users = variable_get('dewy_users');
-    if (is_null($content)) $content = variable_get('dewy_content');
-
-    if ($enabled && !variable_get('dewy_token', 0)) {
+    if ($form_state['values']['dewy_enabled'] && !variable_get('dewy_token', 0)) {
         DewyToken::createToken();
     } 
-    else if (!$enabled) {
+    else if (!$form_state['values']['dewy_enabled']) {
         DewyToken::deleteToken();
     }
 
     $data = 
-            'apikey='.$apikey.'&'.
-            'token='.variable_get('dewy_token').'&'.
-            'baseurl='.$base_url.'&'.
-            'enabled='.$enabled.'&'.
-            'read_users='.$users.'&'.
-            'read_content='.$content;
+        'apikey='.$form_state['values']['dewy_api_key'].'&'.
+        'token='.variable_get('dewy_token').'&'.
+        'baseurl='.$base_url.'&'.
+        'enabled='.$form_state['values']['dewy_enabled'].'&'.
+        'read_users='.$form_state['values']['dewy_users'].'&'.
+        'read_content='.$form_state['values']['dewy_content'];
 
     $options = array(
         'method' => 'POST',

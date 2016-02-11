@@ -16,7 +16,7 @@
                 'drush dewy-enable api_key' => 'Enables site reporting to your Dewy account with your API key.',
                 'drush dewy-enable api_key --read-users --read-content' => 'Enables Dewy and allows users and content information to be read.',
             ),
-            'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_DATABASE,
+            'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
         );
 
         $items['dewy-disable'] = array(
@@ -24,7 +24,7 @@
             'examples' => array(
                 'drush dewy-disable' => 'Disables site reporting to Dewy.',
             ),
-            'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_DATABASE,
+            'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
         );
 
         return $items;
@@ -38,21 +38,41 @@
     }
 
     function drush_dewy_enable() {
-        // Get api key and options
+        // Get options and build form state
+        $form_state = array();
+        $form_state['values']['dewy_enabled'] = 1;
+
         list($api_key) = func_get_args();
+        $form_state['values']['dewy_api_key'] = $api_key;
 
-        $read_users = 0;
+        $form_state['values']['dewy_users'] = NULL;
         if (drush_get_option('read-users')) {
-            $read_users = 1;
+            $form_state['values']['dewy_users'] = 1;
         }
-        $read_content = 0;
+        $form_state['values']['dewy_content'] = NULL;
         if (drush_get_option('read-content')) {
-            $read_content = 1;
+            $form_state['values']['dewy_content'] = 1;
         }
 
-        dewy_register($api_key, 1, $read_users, $read_content);
+        // Submit form
+        drupal_form_submit('dewy_config', $form_state);
     }
 
     function drush_dewy_disable() {
-        dewy_register(null, 0, null, null);
+        // Build form state
+        $form_state = array();
+        $form_state['values']['dewy_enabled'] = NULL;
+        $form_state['values']['dewy_api_key'] = variable_get('dewy_api_key');
+
+        $form_state['values']['dewy_users'] = NULL;
+        if (variable_get('dewy_users')) {
+            $form_state['values']['dewy_users'] = 1;
+        }
+        $form_state['values']['dewy_content'] = NULL;
+        if (variable_get('dewy_content')) {
+            $form_state['values']['dewy_content'] = 1;
+        }
+
+        // Submit form
+        drupal_form_submit('dewy_config', $form_state);
     }
