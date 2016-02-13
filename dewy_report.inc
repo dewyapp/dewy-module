@@ -109,7 +109,7 @@ function dewy_report() {
                 ->condition('entity_id', $node['nid'], '=')
                 ->execute();
                 while ($field = $field_result->fetchAssoc()) {
-                    $content[$column] = $field[$column];
+                    $content[$column] = json_encode($field[$column]);
                 }
             }
         }
