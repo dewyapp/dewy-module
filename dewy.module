@@ -151,7 +151,7 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
                 form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
             }
             else {
-                form_set_error('dewy_api_key', $result->data);
+                form_set_error('dewy_api_key', $result->error);
             }
         }
     }
