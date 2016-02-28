@@ -59,7 +59,7 @@ function dewy_report() {
             foreach($iterator as $file) {
                 if (!$file->isDir()) {
                     $count++;
-                    $size += $file->getSize();
+                    $size += number_format($file->getSize() / 1048576, 2);
                 }
             }
         }
@@ -70,7 +70,7 @@ function dewy_report() {
     // Get database file size
     $database = $GLOBALS['databases']['default']['default']['database'];
     $db_size = db_query("SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) as 'mb' FROM information_schema.tables WHERE table_schema = '".$database."';")->fetchField();
-    $stream->fwrite('"db_size":'.json_encode($db_size).',');
+    $stream->fwrite('"db_size":'.json_encode((float)$db_size).',');
 
     // Get all users, roles and last signons
     $stream->fwrite('"users":{');
@@ -82,7 +82,7 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'last_access' => $user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
+        $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'last_access' => (float)$user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
     }
     $stream->fwrite('},');
 
@@ -113,7 +113,7 @@ function dewy_report() {
                 }
             }
         }
-        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => $node['created'], 'changed' => $node['changed'], 'type' => $node['type'], 'content' => $content)));
+        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'type' => $node['type'], 'content' => $content)));
     }
     $stream->fwrite('},');
     // Get all block content
@@ -149,7 +149,7 @@ function dewy_report() {
         if ($schemas !== FALSE) {
             $latest_schema = max($schemas);
         }
-        $stream->fwrite(json_encode($module_info->name).':'.json_encode(array('project' => $module_info->info['project'], 'schema' => $module_info->schema_version, 'latest_schema' => $latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies'])));
+        $stream->fwrite(json_encode($module_info->name).':'.json_encode(array('project' => $module_info->info['project'], 'schema' => (float)$module_info->schema_version, 'latest_schema' => (float)$latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies'])));
     }
     $stream->fwrite('},');
 
