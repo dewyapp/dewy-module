@@ -159,14 +159,12 @@ function dewy_report() {
     $themes = list_themes(TRUE);
     $first_row = TRUE;
     foreach ($themes as $theme) {
-        if ($theme->info['package'] != 'Core') {
-            if (!$first_row) { 
-                $stream->fwrite(',');
-            } else {
-                $first_row = FALSE;
-            }
-            $stream->fwrite(json_encode($theme->name).':'.json_encode(array('version' => $theme->info['version'])));
+        if (!$first_row) { 
+            $stream->fwrite(',');
+        } else {
+            $first_row = FALSE;
         }
+        $stream->fwrite(json_encode($theme->name).':'.json_encode(array('version' => $theme->info['version'], 'status' => $theme->status)));
     }
     $stream->fwrite('},');
 
