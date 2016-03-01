@@ -116,6 +116,7 @@ function dewy_report() {
         $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'type' => $node['type'], 'content' => $content)));
     }
     $stream->fwrite('},');
+
     // Get all block content
     $stream->fwrite('"blocks":{');
     $result = db_select('block_custom', 'block')
@@ -136,7 +137,7 @@ function dewy_report() {
     $stream->fwrite('"modules":{');
     require_once DRUPAL_ROOT . '/includes/install.inc';
     drupal_load_updates();
-    $modules = system_list('module_enabled');
+    $modules = system_rebuild_module_data();
     $first_row = TRUE;
     foreach ($modules as $module => $module_info) {
         if (!$first_row) { 
