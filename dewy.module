@@ -126,7 +126,7 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
         'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
     );
     $result = drupal_http_request($base_url.'/admin/reports/dewy', $options);
-    if ($result->code != '200' && $form_state['values']['dewy_enabled']) {
+    if ($result->code == '404' && $form_state['values']['dewy_enabled']) {
         form_set_error('dewy_api_key','This site is not reachable at the base_url provided ('.$base_url.'). The base_url can be specified in this site\'s settings.php file, or if using Drush, the \'--uri=SITE\' flag.');
     }
     else {
@@ -151,7 +151,12 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
                 form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
             }
             else {
-                form_set_error('dewy_api_key', $result->error);
+                if (isset($result->data)) {
+                    form_set_error('dewy_api_key', $result->data);
+                }
+                else {
+                    form_set_error('dewy_api_key', $result->error);
+                }
             }
         }
     }
