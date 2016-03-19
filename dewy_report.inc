@@ -140,17 +140,19 @@ function dewy_report() {
     $modules = system_rebuild_module_data();
     $first_row = TRUE;
     foreach ($modules as $module => $module_info) {
-        if (!$first_row) { 
-            $stream->fwrite(',');
-        } else {
-            $first_row = FALSE;
+        if (!$module_info->info['hidden']) {
+            if (!$first_row) { 
+                $stream->fwrite(',');
+            } else {
+                $first_row = FALSE;
+            }
+            $schemas = drupal_get_schema_versions($module_info->name);
+            $latest_schema = 0;
+            if ($schemas !== FALSE) {
+                $latest_schema = max($schemas);
+            }
+            $stream->fwrite(json_encode($module_info->name).':'.json_encode(array('project' => $module_info->info['project'], 'schema' => (float)$module_info->schema_version, 'latest_schema' => (float)$latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies'])));
         }
-        $schemas = drupal_get_schema_versions($module_info->name);
-        $latest_schema = 0;
-        if ($schemas !== FALSE) {
-            $latest_schema = max($schemas);
-        }
-        $stream->fwrite(json_encode($module_info->name).':'.json_encode(array('project' => $module_info->info['project'], 'schema' => (float)$module_info->schema_version, 'latest_schema' => (float)$latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies'])));
     }
     $stream->fwrite('},');
 
