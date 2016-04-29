@@ -133,28 +133,42 @@ function dewy_report() {
     }
     $stream->fwrite('},');
 
-    // Get all enabled modules and possible schema updates
-    $stream->fwrite('"modules":{');
+    // Get all projects and their respective modules/schema updates
+    $stream->fwrite('"projects":');
     require_once DRUPAL_ROOT . '/includes/install.inc';
     drupal_load_updates();
     $modules = system_rebuild_module_data();
-    $first_row = TRUE;
+    $projects = array();
     foreach ($modules as $module => $module_info) {
+        $schemas = drupal_get_schema_versions($module_info->name);
+        $latest_schema = 0;
+        if ($schemas !== FALSE) {
+            $latest_schema = max($schemas);
+        }
         if (!$module_info->info['hidden']) {
-            if (!$first_row) { 
-                $stream->fwrite(',');
+            if (!isset($projects[$module_info->info['project']])) {
+                $projects[$module_info->info['project']] = 
+                    array(
+                        'modules' => array(
+                            $module => array(
+                                'schema' => (float)$module_info->schema_version, 
+                                'latest_schema' => (float)$latest_schema,
+                                'dependencies' => $module_info->info['dependencies']
+                            )
+                        ), 
+                        'version' => $module_info->info['version']
+                    );
             } else {
-                $first_row = FALSE;
+                $projects[$module_info->info['project']]['modules'][$module] = array(
+                    'schema' => (float)$module_info->schema_version, 
+                    'latest_schema' => (float)$latest_schema,
+                    'dependencies' => $module_info->info['dependencies']
+                );
             }
-            $schemas = drupal_get_schema_versions($module_info->name);
-            $latest_schema = 0;
-            if ($schemas !== FALSE) {
-                $latest_schema = max($schemas);
-            }
-            $stream->fwrite(json_encode($module_info->name).':'.json_encode(array('project' => $module_info->info['project'], 'schema' => (float)$module_info->schema_version, 'latest_schema' => (float)$latest_schema, 'version' => $module_info->info['version'], 'dependencies' => $module_info->info['dependencies'])));
         }
     }
-    $stream->fwrite('},');
+    $stream->fwrite(json_encode($projects));
+    $stream->fwrite(',');
 
     // Get all custom themes
     $stream->fwrite('"themes":{');
