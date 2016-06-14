@@ -82,6 +82,11 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
+        // Obfuscate usernames and email addresses if necessary
+        if (!variable_get('dewy_users', 1)) {
+            $user['name'] = 'x';
+            $user['mail'] = 'x';
+        }
         $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'last_access' => (float)$user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
     }
     $stream->fwrite('},');
@@ -109,6 +114,10 @@ function dewy_report() {
                 ->condition('entity_id', $node['nid'], '=')
                 ->execute();
                 while ($field = $field_result->fetchAssoc()) {
+                    // Obfuscate node content if necessary
+                    if (!variable_get('dewy_content', 1)) {
+                        $field[$column] = preg_replace('/\S+/', 'x',  $field[$column]);
+                    }
                     $content[$column] = json_encode($field[$column]);
                 }
             }
@@ -128,6 +137,10 @@ function dewy_report() {
             $stream->fwrite(',');
         } else {
             $first_row = FALSE;
+        }
+        // Obfuscate block content if necessary
+        if (!variable_get('dewy_content', 1)) {
+            $block['body'] = preg_replace('/\S+/', 'x',  $block['body']);
         }
         $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
     }
