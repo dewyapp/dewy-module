@@ -9,12 +9,12 @@
                 'api_key'        => 'API key for your Dewy account.',
             ),
             'options' => array(
-                'read-users' => 'Flag to allow user information to be read',
-                'read-content' => 'Flag to allow site content to be read',
+                'hide-users' => 'Flag to prevent Dewy from reading user information',
+                'hide-content' => 'Flag to prevent Dewy from reading site content',
             ),
             'examples' => array(
                 'drush dewy-enable api_key' => 'Enables site reporting to your Dewy account with your API key.',
-                'drush dewy-enable api_key --read-users --read-content' => 'Enables Dewy and allows users and content information to be read.',
+                'drush dewy-enable api_key --hide-users --hide-content' => 'Enables Dewy and prevents users and content information to be read.',
             ),
             'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_FULL,
         );
@@ -45,13 +45,13 @@
         list($api_key) = func_get_args();
         $form_state['values']['dewy_api_key'] = $api_key;
 
-        $form_state['values']['dewy_users'] = NULL;
-        if (drush_get_option('read-users')) {
-            $form_state['values']['dewy_users'] = 1;
+        $form_state['values']['dewy_users'] = 1;
+        if (drush_get_option('hide-users')) {
+            $form_state['values']['dewy_users'] = NULL;
         }
-        $form_state['values']['dewy_content'] = NULL;
-        if (drush_get_option('read-content')) {
-            $form_state['values']['dewy_content'] = 1;
+        $form_state['values']['dewy_content'] = 1;
+        if (drush_get_option('hide-content')) {
+            $form_state['values']['dewy_content'] = NULL;
         }
 
         // Submit form
