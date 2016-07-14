@@ -64,7 +64,58 @@ class DewyConfig extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-  
+    $config = $this->config('dewy.settings');
+
+    global $base_url;
+
+    // if ($form_state['values']['dewy_enabled'] && !variable_get('dewy_token', 0)) {
+    //     DewyToken::createToken();
+    // } 
+    // else if (!$form_state['values']['dewy_enabled']) {
+    //     DewyToken::deleteToken();
+    // }
+
+    // Test that the site URL is available from the web
+    $options = array(
+        'method' => 'POST',
+        'data' => 'token='.$config->get('token'),
+        'timeout' => 15,
+        'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+    );
+
+    $client = \Drupal::httpClient();
+    $request = $client->request('POST', $base_url.'/admin/reports/dewy', [
+      'http_errors' => false,
+      'form_params' => [
+        'token' => $config->get('token')
+      ]
+    ]);
+    if ($request->getStatusCode() != '200' && $form_state->getValue('dewy_enabled')) {
+      $form_state->setErrorByName('dewy_api_key', t('This site is not reachable at the base_url provided ('.$base_url.'). The base_url can be specified in this site\'s settings.php file, or if using Drush, the \'--uri=SITE\' flag.'));
+    }
+    else {
+      // Attempt to register the site with Dewy
+      $request = $client->request('POST', 'http://api.dewy.io/1.0/sites', [
+        'http_errors' => false,
+        'form_params' => [
+          'apikey' => $form_state->getValue('dewy_api_key'),
+          'token' => $config->get('token'),
+          'baseurl' => $base_url,
+          'enabled' => $form_state->getValue('dewy_enabled'),
+          'read_users' => $form_state->getValue('dewy_users'),
+          'read_content' => $form_state->getValue('dewy_content')
+        ]
+      ]);
+      if ($request->getStatusCode() != '200') {
+        if ($request->getStatusCode() == '500' || $request->getStatusCode() == '503') {
+          $form_state->setErrorByName('dewy_api_key', t('Dewy is unreachable, the API key cannot be verified at this time.'));
+        }
+        else {
+          $form_state->setErrorByName('dewy_api_key', $request->getBody());
+        }
+      }
+    }
+    
     parent::validateForm($form, $form_state);
   }
 
