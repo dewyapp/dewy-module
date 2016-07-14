@@ -1,0 +1,7 @@
+dewy.admin_settings_form:
+  path: '/admin/config/system/dewy'
+  defaults:
+    _form: '\Drupal\dewy\Form\DewyConfig'
+    _title: 'Dewy'
+  requirements:
+    _permission: 'administer site configuration'

@@ -1,0 +1,5 @@
+dewy.admin_settings_form:
+  title: 'Dewy'
+  description: 'Dewy configuration page.'
+  parent: system.admin_config_system
+  route_name: dewy.admin_settings_form

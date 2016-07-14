@@ -1,0 +1,7 @@
+name: Dewy
+type: module
+description: Provides the Dewy service with information about your site.
+package: Dewy
+core: 8.x
+version: 8.x-1.0
+configure: dewy.admin_settings_form
