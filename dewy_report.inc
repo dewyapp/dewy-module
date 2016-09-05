@@ -83,7 +83,7 @@ function dewy_report() {
 
     // Get all users, roles and last signons
     $stream->fwrite('"users":{');
-    $result = db_query("SELECT users.name AS name, mail, access AS last_access, status, GROUP_CONCAT(role.name SEPARATOR ',') AS roles FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid GROUP BY name");
+    $result = db_query("SELECT users.name AS name, mail, created, access AS last_access, status, GROUP_CONCAT(role.name SEPARATOR ',') AS roles FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid GROUP BY name");
     $first_row = TRUE;
     while ($user = $result->fetchAssoc()) {
         if (!$first_row) { 
@@ -96,7 +96,7 @@ function dewy_report() {
             $user['name'] = 'x';
             $user['mail'] = 'x';
         }
-        $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'last_access' => (float)$user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
+        $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'created' => (float)$user['created'], 'last_access' => (float)$user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
     }
     $stream->fwrite('},');
 
