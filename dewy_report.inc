@@ -5,6 +5,9 @@ function dewy_report() {
     $stream = new SplFileObject('php://output', 'w');
     $stream->fwrite('{');
 
+    // Get audit time
+    $stream->fwrite('"date":'.json_encode(time()).',');
+
     // Get title
     $stream->fwrite('"title":'.json_encode(variable_get('site_name')).',');
 
@@ -21,6 +24,8 @@ function dewy_report() {
     $stream->fwrite('"traffic":{');
     $ignores = array('admin');
     $result = db_query("SELECT path, hits, lastaccess FROM dewy_counter");
+    $stream->fwrite('"recorded_since":'.json_encode(variable_get('dewy_count_date')).',');
+    $stream->fwrite('"paths":{');
     $first_row = TRUE;
     while ($path = $result->fetchAssoc()) {
         foreach ($ignores as $ignore) {
@@ -30,11 +35,11 @@ function dewy_report() {
                 } else {
                     $first_row = FALSE;
                 }
-                $stream->fwrite(json_encode($path['path']).':'.json_encode(array('hits' => $path['hits'], 'last_access' => $path['lastaccess'])));
+                $stream->fwrite(json_encode($path['path']).':'.json_encode(array('hits' => (float)$path['hits'], 'last_access' => (float)$path['lastaccess'])));
             }
         }
     }
-    $stream->fwrite('},');
+    $stream->fwrite('}},');
 
     // Get the file count and file sizes
     $stream->fwrite('"files":{');
