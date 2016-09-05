@@ -167,7 +167,9 @@ function dewy_report() {
         if ($schemas !== FALSE) {
             $latest_schema = max($schemas);
         }
-        if (!$module_info->info['hidden']) {
+        // Unfortunately I need to show hidden modules, because when you are logged out, more (and essential) modules are set to hidden for
+        // a reason I haven't figured out yet
+        // if (!$module_info->info['hidden']) {
             if (!isset($projects[$module_info->info['project']])) {
                 $projects[$module_info->info['project']] = 
                     array(
@@ -175,7 +177,8 @@ function dewy_report() {
                             $module => array(
                                 'schema' => (float)$module_info->schema_version, 
                                 'latest_schema' => (float)$latest_schema,
-                                'dependencies' => $module_info->info['dependencies']
+                                'dependencies' => $module_info->info['dependencies'],
+                                'hidden' => $module_info->info['hidden']
                             )
                         ), 
                         'version' => $module_info->info['version']
@@ -184,10 +187,11 @@ function dewy_report() {
                 $projects[$module_info->info['project']]['modules'][$module] = array(
                     'schema' => (float)$module_info->schema_version, 
                     'latest_schema' => (float)$latest_schema,
-                    'dependencies' => $module_info->info['dependencies']
+                    'dependencies' => $module_info->info['dependencies'],
+                    'hidden' => $module_info->info['hidden']
                 );
             }
-        }
+        // }
     }
     $stream->fwrite(json_encode($projects));
     $stream->fwrite(',');
