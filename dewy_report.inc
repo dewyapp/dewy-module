@@ -167,9 +167,12 @@ function dewy_report() {
         if ($schemas !== FALSE) {
             $latest_schema = max($schemas);
         }
-        // Unfortunately I need to show hidden modules, because when you are logged out, more (and essential) modules are set to hidden for
-        // a reason I haven't figured out yet
+        // Unfortunately I need to show hidden modules, because when you are logged out, many essential modules are set to hidden 
+        // (that aren't set to hidden when logged in) for a reason I haven't figured out yet
         // if (!$module_info->info['hidden']) {
+
+        // Instead we can hide modules that are core and under package 'Testing', this seems to hide the modules we don't care about
+        if ($module_info->info['project'] != "Drupal" && $module_info->info['package'] != "Testing") {
             if (!isset($projects[$module_info->info['project']])) {
                 $projects[$module_info->info['project']] = 
                     array(
@@ -177,8 +180,7 @@ function dewy_report() {
                             $module => array(
                                 'schema' => (float)$module_info->schema_version, 
                                 'latest_schema' => (float)$latest_schema,
-                                'dependencies' => $module_info->info['dependencies'],
-                                'hidden' => $module_info->info['hidden']
+                                'dependencies' => $module_info->info['dependencies']
                             )
                         ), 
                         'version' => $module_info->info['version']
@@ -187,11 +189,10 @@ function dewy_report() {
                 $projects[$module_info->info['project']]['modules'][$module] = array(
                     'schema' => (float)$module_info->schema_version, 
                     'latest_schema' => (float)$latest_schema,
-                    'dependencies' => $module_info->info['dependencies'],
-                    'hidden' => $module_info->info['hidden']
+                    'dependencies' => $module_info->info['dependencies']
                 );
             }
-        // }
+        }
     }
     $stream->fwrite(json_encode($projects));
     $stream->fwrite(',');
