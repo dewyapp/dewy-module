@@ -42,7 +42,7 @@ function dewy_menu_site_status_alter(&$menu_site_status, $path) {
 
 function dewy_report_access_callback() {
     if (variable_get('dewy_token', 0)) {
-        $allowed_viewers = array('127.0.0.1', '::1', gethostbyname('dewy.io'));
+        $allowed_viewers = array('127.0.0.1', '::1', gethostbyname('api.dewy.io'));
         foreach ($allowed_viewers as $viewer) {
             if (ip_address() == $viewer) {
                 if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
@@ -100,7 +100,7 @@ function dewy_config($form, &$form_state) {
         '#default_value' => variable_get('dewy_api_key', ''),
         '#size' => 40,
         '#maxlength' => 36,
-        '#description' => t('The API key of your Dewy account. This is required to link this site to your Dewy account. <a href="http://dewy.io" target="_blank">Get a Dewy API key</a>.'),
+        '#description' => t('The API key of your Dewy account. This is required to link this site to your Dewy account. <a href="https://dewy.io" target="_blank">Get a Dewy API key</a>.'),
         '#required' => TRUE,
     );
     $form['#validate'][] = 'dewy_validate';
@@ -146,7 +146,7 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
             'timeout' => 15,
             'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
         );
-        $result = drupal_http_request('http://api.dewy.io/1.0/sites', $options);
+        $result = drupal_http_request('https://api.dewy.io/1.0/sites', $options);
         if ($result->code != '200') {
             if ($result->code == '500' || $result->code == '503') {
                 form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
