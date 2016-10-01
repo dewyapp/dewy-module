@@ -22,7 +22,7 @@ function dewy_menu() {
 
     $items['admin/reports/dewy'] = array(
         'title' => 'Dewy report',
-        'description' => 'Information about your site for Dewy.',
+        'description' => 'The raw data Dewy will read from your site.',
         'file' => 'dewy_report.inc',
         'page callback' => 'dewy_report',
         'access callback' => 'dewy_report_access_callback',
@@ -42,12 +42,12 @@ function dewy_menu_site_status_alter(&$menu_site_status, $path) {
 
 function dewy_report_access_callback() {
     if (variable_get('dewy_token', 0)) {
-        $allowed_viewers = array('127.0.0.1', '::1', gethostbyname('api.dewy.io'));
-        foreach ($allowed_viewers as $viewer) {
-            if (ip_address() == $viewer) {
-                if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
-                    return TRUE;
-                }
+        if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
+            return TRUE;
+        }
+        else if (ip_address() == gethostbyname('api.dewy.io')) {
+            if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
+                return TRUE;
             }
         }
     }
