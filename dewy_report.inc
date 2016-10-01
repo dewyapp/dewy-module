@@ -105,9 +105,18 @@ function dewy_report() {
     }
     $stream->fwrite('},');
 
+    // Get all text fields on the site
+    $text_fields = array();
+    $fields = field_info_fields();
+    foreach ($fields as $field) {
+        if ($field['module'] == 'text') {
+            array_push($text_fields, $field);
+        }
+    }
+    unset($fields);
+
     // Get all node content
     $stream->fwrite('"nodes":{');
-    $fields = field_info_fields();
     $result = db_query("SELECT nid, type, created, changed, status FROM node");
     $first_row = TRUE;
     while ($node = $result->fetchAssoc()) {
@@ -118,22 +127,20 @@ function dewy_report() {
         }
         // See what text field data is associate with this node
         $content = array();
-        foreach ($fields as $field) {
-            if ($field['module'] == 'text') {
-                $table = _field_sql_storage_tablename($field);
-                $column = _field_sql_storage_columnname($field['field_name'], 'value');
-                $field_result = db_select($table, 'field')
-                ->fields('field', array($column, 'entity_id'))
-                ->condition('entity_type', 'node', '=')
-                ->condition('entity_id', $node['nid'], '=')
-                ->execute();
-                while ($field = $field_result->fetchAssoc()) {
-                    // Obfuscate node content if necessary
-                    if (!variable_get('dewy_content', 1)) {
-                        $field[$column] = preg_replace('/\S+/', 'x',  $field[$column]);
-                    }
-                    $content[$column] = json_encode($field[$column]);
+        foreach ($text_fields as $field) {
+            $table = _field_sql_storage_tablename($field);
+            $column = _field_sql_storage_columnname($field['field_name'], 'value');
+            $field_result = db_select($table, 'field')
+            ->fields('field', array($column, 'entity_id'))
+            ->condition('entity_type', 'node', '=')
+            ->condition('entity_id', $node['nid'], '=')
+            ->execute();
+            while ($field = $field_result->fetchAssoc()) {
+                // Obfuscate node content if necessary
+                if (!variable_get('dewy_content', 1)) {
+                    $field[$column] = preg_replace('/\S+/', 'x',  $field[$column]);
                 }
+                $content[$column] = json_encode($field[$column]);
             }
         }
         $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'content' => $content)));
