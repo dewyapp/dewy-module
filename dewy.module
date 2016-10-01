@@ -27,7 +27,7 @@ function dewy_menu() {
         'page callback' => 'dewy_report',
         'access callback' => 'dewy_report_access_callback',
         'access arguments' => array('site'),
-        'type' => MENU_NORMAL_ITEM,
+        'type' => MENU_CALLBACK,
     );
 
     $items['admin/reports/dewy-content'] = array(
@@ -37,7 +37,7 @@ function dewy_menu() {
         'page callback' => 'dewy_report',
         'access callback' => 'dewy_report_access_callback',
         'access arguments' => array('content'),
-        'type' => MENU_NORMAL_ITEM,
+        'type' => MENU_CALLBACK,
     );
 
     return $items;
