@@ -108,7 +108,7 @@ function dewy_report() {
     // Get all node content
     $stream->fwrite('"nodes":{');
     $fields = field_info_fields();
-    $result = db_query("SELECT nid, type, created, changed FROM node");
+    $result = db_query("SELECT nid, type, created, changed, status FROM node");
     $first_row = TRUE;
     while ($node = $result->fetchAssoc()) {
         if (!$first_row) { 
@@ -136,7 +136,7 @@ function dewy_report() {
                 }
             }
         }
-        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'type' => $node['type'], 'content' => $content)));
+        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'content' => $content)));
     }
     $stream->fwrite('},');
 
