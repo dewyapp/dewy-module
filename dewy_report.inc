@@ -146,6 +146,7 @@ function dewy_report() {
         $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'content' => $content)));
     }
     $stream->fwrite('},');
+    unset($text_fields);
 
     // Get all block content
     $stream->fwrite('"blocks":{');
@@ -208,6 +209,8 @@ function dewy_report() {
     }
     $stream->fwrite(json_encode($projects));
     $stream->fwrite(',');
+    unset($modules);
+    unset($projects);
 
     // Get all custom themes
     $stream->fwrite('"themes":{');
@@ -222,6 +225,7 @@ function dewy_report() {
         $stream->fwrite(json_encode($theme->name).':'.json_encode(array('version' => $theme->info['version'], 'status' => $theme->status)));
     }
     $stream->fwrite('},');
+    unset($themes);
 
     // Get all variables
     $stream->fwrite('"variables":{');
