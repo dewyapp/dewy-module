@@ -21,11 +21,22 @@ function dewy_menu() {
     );
 
     $items['admin/reports/dewy'] = array(
-        'title' => 'Dewy report',
-        'description' => 'The raw data Dewy will read from your site.',
+        'title' => 'Dewy site report',
+        'description' => 'The raw site data Dewy will read from your site.',
         'file' => 'dewy_report.inc',
         'page callback' => 'dewy_report',
         'access callback' => 'dewy_report_access_callback',
+        'access arguments' => array('site'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    $items['admin/reports/dewy-content'] = array(
+        'title' => 'Dewy site content report',
+        'description' => 'The raw site content data Dewy will read from your site.',
+        'file' => 'dewy_report_content.inc',
+        'page callback' => 'dewy_report',
+        'access callback' => 'dewy_report_access_callback',
+        'access arguments' => array('content'),
         'type' => MENU_NORMAL_ITEM,
     );
 
@@ -40,14 +51,16 @@ function dewy_menu_site_status_alter(&$menu_site_status, $path) {
     }
 }
 
-function dewy_report_access_callback() {
-    if (variable_get('dewy_token', 0)) {
-        if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
-            return TRUE;
-        }
-        else if (ip_address() == gethostbyname('api.dewy.io')) {
-            if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
+function dewy_report_access_callback($type) {
+    if ($type != "content" || ($type == "content" && variable_get('dewy_content', 1))) {
+        if (variable_get('dewy_token', 0)) {
+            if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
                 return TRUE;
+            }
+            else if (ip_address() == gethostbyname('api.dewy.io')) {
+                if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
+                    return TRUE;
+                }
             }
         }
     }

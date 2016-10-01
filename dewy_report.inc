@@ -115,7 +115,7 @@ function dewy_report() {
     }
     unset($fields);
 
-    // Get all node content
+    // Get all node metadata
     $stream->fwrite('"nodes":{');
     $result = db_query("SELECT nid, type, created, changed, status FROM node");
     $first_row = TRUE;
@@ -136,11 +136,7 @@ function dewy_report() {
             ->condition('entity_id', $node['nid'], '=')
             ->execute();
             while ($field = $field_result->fetchAssoc()) {
-                // Obfuscate node content if necessary
-                if (!variable_get('dewy_content', 1)) {
-                    $field[$column] = preg_replace('/\S+/', 'x',  $field[$column]);
-                }
-                $content[$column] = json_encode($field[$column]);
+                $content[$column] = array('words' => str_word_count($field[$column], 0));
             }
         }
         $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'content' => $content)));
@@ -148,7 +144,7 @@ function dewy_report() {
     $stream->fwrite('},');
     unset($text_fields);
 
-    // Get all block content
+    // Get all block metadata
     $stream->fwrite('"blocks":{');
     $result = db_select('block_custom', 'block')
     ->fields('block', array('bid', 'body'))
@@ -160,11 +156,8 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        // Obfuscate block content if necessary
-        if (!variable_get('dewy_content', 1)) {
-            $block['body'] = preg_replace('/\S+/', 'x',  $block['body']);
-        }
-        $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
+        $content = array('words' => str_word_count($block['body'], 0));
+        $stream->fwrite(json_encode($block['bid']).':'.json_encode($content));
     }
     $stream->fwrite('},');
 
