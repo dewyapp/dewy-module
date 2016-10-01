@@ -1,6 +1,11 @@
 <?php
 
 function dewy_report() {
+    // If PHP stops execution at anything under 10 minutes, attempt to set time to 10 minutes
+    if (ini_get('max_execution_time') > 0 && ini_get('max_execution_time') < 600) {
+        set_time_limit(600);
+    }
+
     // Open stream
     $stream = new SplFileObject('php://output', 'w');
     $stream->fwrite('{');
