@@ -125,8 +125,8 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        // See what text field data is associate with this node
-        $content = array();
+        // Count words of text field data associated with this node
+        $words = 0;
         foreach ($text_fields as $field) {
             $table = _field_sql_storage_tablename($field);
             $column = _field_sql_storage_columnname($field['field_name'], 'value');
@@ -136,10 +136,10 @@ function dewy_report() {
             ->condition('entity_id', $node['nid'], '=')
             ->execute();
             while ($field = $field_result->fetchAssoc()) {
-                $content[$column] = array('words' => str_word_count($field[$column], 0));
+                $words = $words + str_word_count($field[$column], 0);
             }
         }
-        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'content' => $content)));
+        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'words' => $words)));
     }
     $stream->fwrite('},');
     unset($text_fields);
