@@ -22,7 +22,7 @@ function dewy_report() {
 
     // Get all node content
     $stream->fwrite('"nodes":{');
-    $result = db_query("SELECT nid, type, created, changed, status FROM node");
+    $result = db_query("SELECT nid FROM node");
     $first_row = TRUE;
     while ($node = $result->fetchAssoc()) {
         if (!$first_row) { 
@@ -41,10 +41,10 @@ function dewy_report() {
             ->condition('entity_id', $node['nid'], '=')
             ->execute();
             while ($field = $field_result->fetchAssoc()) {
-                $content[$column] = array('words' => str_word_count($field[$column], 0), 'raw' => $field[$column]);
+                $content[$column] = $field[$column];
             }
         }
-        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'content' => $content)));
+        $stream->fwrite(json_encode($node['nid']).':'.json_encode($content));
     }
     $stream->fwrite('},');
     unset($text_fields);
@@ -61,8 +61,7 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        $content = array('words' => str_word_count($block['body'], 0), 'raw' => $block['body']);
-        $stream->fwrite(json_encode($block['bid']).':'.json_encode($content));
+        $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
     }
     $stream->fwrite('}');
 
