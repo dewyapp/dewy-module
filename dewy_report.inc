@@ -108,16 +108,6 @@ function dewy_report() {
     }
     $stream->fwrite('},');
 
-    // Get all text fields on the site
-    $text_fields = array();
-    $fields = field_info_fields();
-    foreach ($fields as $field) {
-        if ($field['module'] == 'text') {
-            array_push($text_fields, $field);
-        }
-    }
-    unset($fields);
-
     // Get all node metadata
     $stream->fwrite('"nodes":{');
     $result = db_query("SELECT nid, type, created, changed, status FROM node");
@@ -128,42 +118,7 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        // Count words of text field data associated with this node
-        $words = 0;
-        $field_query = db_select('node', 'n');
-        foreach ($text_fields as $field) {
-            $table = _field_sql_storage_tablename($field);
-            $column = _field_sql_storage_columnname($field['field_name'], 'value');
-            $field_query->leftJoin($table, NULL, "$table.entity_id = n.nid");
-            $field_query->fields(NULL, array($column));
-        }
-        $field_query->condition('n.nid', $node['nid'], '=');
-        $field_result = $field_query->execute();
-        if ($field = $field_result->fetchAssoc()) {
-            foreach ($field as $key => $value) {
-                $words = $words + str_word_count($value, 0);
-            }
-        }
-
-        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'words' => $words)));
-    }
-    $stream->fwrite('},');
-    unset($text_fields);
-
-    // Get all block metadata
-    $stream->fwrite('"blocks":{');
-    $result = db_select('block_custom', 'block')
-    ->fields('block', array('bid', 'body'))
-    ->execute();
-    $first_row = TRUE;
-    while ($block = $result->fetchAssoc()) {
-        if (!$first_row) { 
-            $stream->fwrite(',');
-        } else {
-            $first_row = FALSE;
-        }
-        $content = array('words' => str_word_count($block['body'], 0));
-        $stream->fwrite(json_encode($block['bid']).':'.json_encode($content));
+        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'])));
     }
     $stream->fwrite('},');
 

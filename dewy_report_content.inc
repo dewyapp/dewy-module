@@ -34,6 +34,7 @@ function dewy_report() {
             $first_row = FALSE;
         }
         // See what text field data is associate with this node
+        $words = 0;
         $content = array();
         $field_query = db_select('node', 'n');
         foreach ($text_fields as $field) {
@@ -46,12 +47,18 @@ function dewy_report() {
         $field_result = $field_query->execute();
         if ($field = $field_result->fetchAssoc()) {
             foreach ($field as $key => $value) {
+                $words = $words + str_word_count($value, 0);
                 if ($value) {
                     $content[$key] = $value;
                 }
             }
         }
-        $stream->fwrite(json_encode($node['nid']).':'.json_encode($content));
+        if (variable_get('dewy_content', 1)) {
+            $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('content' => $content, 'words' => $words)));
+        }
+        else {
+            $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('words' => $words)));
+        }
     }
     $stream->fwrite('},');
     unset($text_fields);
@@ -68,7 +75,12 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
+        if (variable_get('dewy_content', 1)) {
+            $stream->fwrite(json_encode($block['bid']).':'.json_encode(array('content' => $block['body'], 'words' => str_word_count($block['body'], 0))));
+        }
+        else {
+            $stream->fwrite(json_encode($block['bid']).':'.json_encode(array('words' => str_word_count($block['body'], 0))));
+        }
     }
     $stream->fwrite('},');
 

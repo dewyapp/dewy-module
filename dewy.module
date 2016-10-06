@@ -26,7 +26,6 @@ function dewy_menu() {
         'file' => 'dewy_report.inc',
         'page callback' => 'dewy_report',
         'access callback' => 'dewy_report_access_callback',
-        'access arguments' => array('site'),
         'type' => MENU_CALLBACK,
     );
 
@@ -36,7 +35,6 @@ function dewy_menu() {
         'file' => 'dewy_report_content.inc',
         'page callback' => 'dewy_report',
         'access callback' => 'dewy_report_access_callback',
-        'access arguments' => array('content'),
         'type' => MENU_CALLBACK,
     );
 
@@ -51,16 +49,14 @@ function dewy_menu_site_status_alter(&$menu_site_status, $path) {
     }
 }
 
-function dewy_report_access_callback($type) {
-    if ($type != "content" || ($type == "content" && variable_get('dewy_content', 1))) {
-        if (variable_get('dewy_token', 0)) {
-            if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
+function dewy_report_access_callback() {
+    if (variable_get('dewy_token', 0)) {
+        if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
+            return TRUE;
+        }
+        else if (ip_address() == gethostbyname('api.dewy.io')) {
+            if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
                 return TRUE;
-            }
-            else if (ip_address() == gethostbyname('api.dewy.io')) {
-                if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
-                    return TRUE;
-                }
             }
         }
     }
