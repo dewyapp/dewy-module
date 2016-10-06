@@ -70,7 +70,7 @@ function dewy_report() {
         }
         $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
     }
-    $stream->fwrite('}');
+    $stream->fwrite('},');
 
     // Report benchmark
     $time_end = microtime(true);
