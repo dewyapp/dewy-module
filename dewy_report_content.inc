@@ -6,6 +6,9 @@ function dewy_report() {
         set_time_limit(600);
     }
 
+    // Measure benchmark
+    $time_start = microtime(true);
+
     // Open stream
     $stream = new SplFileObject('php://output', 'w');
     $stream->fwrite('{');
@@ -64,6 +67,11 @@ function dewy_report() {
         $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
     }
     $stream->fwrite('}');
+
+    // Report benchmark
+    $time_end = microtime(true);
+    $time = $time_end - $time_start;
+    $stream->fwrite('"benchmark":'.$time);
 
     // Close stream
     $stream->fwrite('}');

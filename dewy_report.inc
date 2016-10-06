@@ -6,6 +6,9 @@ function dewy_report() {
         set_time_limit(600);
     }
 
+    // Measure benchmark
+    $time_start = microtime(true);
+
     // Open stream
     $stream = new SplFileObject('php://output', 'w');
     $stream->fwrite('{');
@@ -139,6 +142,7 @@ function dewy_report() {
                 $words = $words + str_word_count($field[$column], 0);
             }
         }
+
         $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'], 'words' => $words)));
     }
     $stream->fwrite('},');
@@ -232,7 +236,12 @@ function dewy_report() {
         }
         $stream->fwrite(json_encode($variable['name']).':'.json_encode(variable_get($variable['name'])));
     }
-    $stream->fwrite('}');
+    $stream->fwrite('},');
+
+    // Report benchmark
+    $time_end = microtime(true);
+    $time = $time_end - $time_start;
+    $stream->fwrite('"benchmark":'.$time);
 
     // Close stream
     $stream->fwrite('}');
