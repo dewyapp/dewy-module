@@ -35,16 +35,20 @@ function dewy_report() {
         }
         // See what text field data is associate with this node
         $content = array();
+        $field_query = db_select('node', 'n');
         foreach ($text_fields as $field) {
             $table = _field_sql_storage_tablename($field);
             $column = _field_sql_storage_columnname($field['field_name'], 'value');
-            $field_result = db_select($table, 'field')
-            ->fields('field', array($column, 'entity_id'))
-            ->condition('entity_type', 'node', '=')
-            ->condition('entity_id', $node['nid'], '=')
-            ->execute();
-            while ($field = $field_result->fetchAssoc()) {
-                $content[$column] = $field[$column];
+            $field_query->leftJoin($table, NULL, "$table.entity_id = n.nid");
+            $field_query->fields(NULL, array($column));
+        }
+        $field_query->condition('n.nid', $node['nid'], '=');
+        $field_result = $field_query->execute();
+        if ($field = $field_result->fetchAssoc()) {
+            foreach ($field as $key => $value) {
+                if ($value) {
+                    $content[$key] = $value;
+                }
             }
         }
         $stream->fwrite(json_encode($node['nid']).':'.json_encode($content));
