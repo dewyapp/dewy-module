@@ -136,6 +136,15 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
         DewyToken::deleteToken();
     }
 
+    // Clear any traffic data if traffic has been turned off
+    if (!$form_state['values']['dewy_traffic'] && variable_get('dewy_traffic', 1)) {
+        db_truncate('dewy_counter')->execute();
+    }
+    // Reset recorded since value if traffic has been turned on
+    if ($form_state['values']['dewy_traffic'] && !variable_get('dewy_traffic', 1)) {
+        variable_set('dewy_count_date', time());
+    }
+
     // Test that the site URL is available from the web
     $options = array(
         'method' => 'POST',
@@ -164,7 +173,7 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
             'timeout' => 15,
             'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
         );
-        $result = drupal_http_request('https://api.dewy.io/1.0/sites', $options);
+        $result = drupal_http_request('http://api.dewy.local/1.0/sites', $options);
         if ($result->code != '200') {
             if ($result->code == '500' || $result->code == '503') {
                 form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
