@@ -29,7 +29,7 @@ function dewy_report() {
     $stream->fwrite('"php_version":'.json_encode(PHP_VERSION).',');
     
     // Get path accesses
-    if (variable_get('dewy_content', 1)) {
+    if (variable_get('dewy_traffic', 1)) {
         $stream->fwrite('"traffic":{');
         $ignores = array('admin');
         $result = db_query("SELECT path, hits, lastaccess FROM dewy_counter");
@@ -49,9 +49,6 @@ function dewy_report() {
             }
         }
         $stream->fwrite('}},');
-    }
-    else {
-        $stream->fwrite('"traffic":{"recorded_since":-1},');
     }
 
     // Get the file count and file sizes
