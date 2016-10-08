@@ -17,7 +17,7 @@ function dewy_requirements($phase) {
     set_time_limit(0);
     $seconds = ini_get('max_execution_time');
     if ($seconds != 0) {
-        if ($seconds < 120) {
+        if ($seconds < 60) {
             $requirements['dewy_php_exec_time']['description'] = t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds which is likely insufficient to complete an audit of this site. This can be fixed by increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
             $requirements['dewy_php_exec_time']['severity'] = REQUIREMENT_ERROR;
             $requirements['dewy_php_exec_time']['value'] = t('Restricted and insufficient');
@@ -41,6 +41,7 @@ function dewy_uninstall() {
     variable_del('dewy_enabled');
     variable_del('dewy_users');
     variable_del('dewy_content');
+    variable_del('dewy_traffic');
     variable_del('dewy_api_key');
     variable_del('dewy_token');
     variable_del('dewy_count_date');

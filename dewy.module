@@ -64,24 +64,26 @@ function dewy_report_access_callback() {
 }
 
 function dewy_page_build(&$page) {
-    $settings = array(
-        'url' => url(drupal_get_path('module', 'dewy').'/php/dewy_counter.php'),
-        'data' => array(
-            'path' => current_path(),
-            'drupal' => DRUPAL_ROOT,
-        ),
-    );
-    $page['content'][] = array(
-        '#attached' => array(     
-            'js' => array(
-                drupal_get_path('module', 'dewy') . '/js/dewy_counter.js' => array(),
+    if (variable_get('dewy_content', 1)) {
+        $settings = array(
+            'url' => url(drupal_get_path('module', 'dewy').'/php/dewy_counter.php'),
+            'data' => array(
+                'path' => current_path(),
+                'drupal' => DRUPAL_ROOT,
             ),
-        ),
-    );
-    $page['content']['#attached']['js'][] = array(
-        'data' => array('dewy' => $settings),
-        'type' => 'setting',
-    );
+        );
+        $page['content'][] = array(
+            '#attached' => array(     
+                'js' => array(
+                    drupal_get_path('module', 'dewy') . '/js/dewy_counter.js' => array(),
+                ),
+            ),
+        );
+        $page['content']['#attached']['js'][] = array(
+            'data' => array('dewy' => $settings),
+            'type' => 'setting',
+        );
+    }
 }
 
 function dewy_config($form, &$form_state) {
@@ -95,13 +97,19 @@ function dewy_config($form, &$form_state) {
         '#type' => 'checkbox',
         '#title' => t('Include usernames and emails'),
         '#default_value' => variable_get('dewy_users', 1),
-        '#description' => t('Allow Dewy to pull username and email data.'),
+        '#description' => t('Allow Dewy to pull usernames and emails to allow user search.'),
     );
     $form['dewy_content'] = array(
         '#type' => 'checkbox',
         '#title' => t('Include content'),
         '#default_value' => variable_get('dewy_content', 1),
         '#description' => t('Allow Dewy to pull content data.'),
+    );
+    $form['dewy_traffic'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Include traffic'),
+        '#default_value' => variable_get('dewy_traffic', 1),
+        '#description' => t('Allow this module to generate site traffic data for Dewy. Turn this off for high-traffic sites where performance is a concern.'),
     );
     $form['dewy_api_key'] = array(
         '#type' => 'textfield',
@@ -147,7 +155,8 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
             'baseurl='.$base_url.'&'.
             'enabled='.$form_state['values']['dewy_enabled'].'&'.
             'read_users='.$form_state['values']['dewy_users'].'&'.
-            'read_content='.$form_state['values']['dewy_content'];
+            'read_content='.$form_state['values']['dewy_content'].'&'.
+            'read_traffic='.$form_state['values']['dewy_traffic'];
 
         $options = array(
             'method' => 'POST',

@@ -29,25 +29,30 @@ function dewy_report() {
     $stream->fwrite('"php_version":'.json_encode(PHP_VERSION).',');
     
     // Get path accesses
-    $stream->fwrite('"traffic":{');
-    $ignores = array('admin');
-    $result = db_query("SELECT path, hits, lastaccess FROM dewy_counter");
-    $stream->fwrite('"recorded_since":'.json_encode(variable_get('dewy_count_date')).',');
-    $stream->fwrite('"paths":{');
-    $first_row = TRUE;
-    while ($path = $result->fetchAssoc()) {
-        foreach ($ignores as $ignore) {
-            if (substr($path['path'], 0, strlen($ignore)) != $ignore) {
-                if (!$first_row) { 
-                    $stream->fwrite(',');
-                } else {
-                    $first_row = FALSE;
+    if (variable_get('dewy_content', 1)) {
+        $stream->fwrite('"traffic":{');
+        $ignores = array('admin');
+        $result = db_query("SELECT path, hits, lastaccess FROM dewy_counter");
+        $stream->fwrite('"recorded_since":'.json_encode(variable_get('dewy_count_date')).',');
+        $stream->fwrite('"paths":{');
+        $first_row = TRUE;
+        while ($path = $result->fetchAssoc()) {
+            foreach ($ignores as $ignore) {
+                if (substr($path['path'], 0, strlen($ignore)) != $ignore) {
+                    if (!$first_row) { 
+                        $stream->fwrite(',');
+                    } else {
+                        $first_row = FALSE;
+                    }
+                    $stream->fwrite(json_encode($path['path']).':'.json_encode(array('hits' => (float)$path['hits'], 'last_access' => (float)$path['lastaccess'])));
                 }
-                $stream->fwrite(json_encode($path['path']).':'.json_encode(array('hits' => (float)$path['hits'], 'last_access' => (float)$path['lastaccess'])));
             }
         }
+        $stream->fwrite('}},');
     }
-    $stream->fwrite('}},');
+    else {
+        $stream->fwrite('"traffic":{"recorded_since":-1},');
+    }
 
     // Get the file count and file sizes
     $stream->fwrite('"files":{');

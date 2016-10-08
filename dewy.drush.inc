@@ -11,6 +11,7 @@
             'options' => array(
                 'hide-users' => 'Flag to prevent Dewy from reading user information',
                 'hide-content' => 'Flag to prevent Dewy from reading site content',
+                'hide-traffic' => 'Flag to prevent generation of site traffic data for Dewy',
             ),
             'examples' => array(
                 'drush dewy-enable api_key' => 'Enables site reporting to your Dewy account with your API key.',
@@ -53,6 +54,10 @@
         if (drush_get_option('hide-content')) {
             $form_state['values']['dewy_content'] = NULL;
         }
+        $form_state['values']['dewy_traffic'] = 1;
+        if (drush_get_option('hide-traffic')) {
+            $form_state['values']['dewy_traffic'] = NULL;
+        }
 
         // Submit form
         drupal_form_submit('dewy_config', $form_state);
@@ -71,6 +76,10 @@
         $form_state['values']['dewy_content'] = NULL;
         if (variable_get('dewy_content')) {
             $form_state['values']['dewy_content'] = 1;
+        }
+        $form_state['values']['dewy_traffic'] = NULL;
+        if (variable_get('dewy_traffic')) {
+            $form_state['values']['dewy_traffic'] = 1;
         }
 
         // Submit form
