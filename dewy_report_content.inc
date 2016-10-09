@@ -25,7 +25,17 @@ function dewy_report() {
 
     // Get all node content
     $stream->fwrite('"nodes":{');
-    $result = db_query("SELECT nid FROM node");
+    
+    $query = db_select('node', 'n');
+    $query->fields('n', array('nid'));
+    foreach ($text_fields as $field) {
+        $table = _field_sql_storage_tablename($field);
+        $column = _field_sql_storage_columnname($field['field_name'], 'value');
+        $query->leftJoin($table, NULL, "$table.entity_id = n.nid");
+        $query->fields(NULL, array($column));
+    }
+    $result = $query->execute();
+
     $first_row = TRUE;
     while ($node = $result->fetchAssoc()) {
         if (!$first_row) { 
@@ -33,31 +43,29 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        // See what text field data is associate with this node
+
         $words = 0;
         $content = array();
-        $field_query = db_select('node', 'n');
-        foreach ($text_fields as $field) {
-            $table = _field_sql_storage_tablename($field);
-            $column = _field_sql_storage_columnname($field['field_name'], 'value');
-            $field_query->leftJoin($table, NULL, "$table.entity_id = n.nid");
-            $field_query->fields(NULL, array($column));
-        }
-        $field_query->condition('n.nid', $node['nid'], '=');
-        $field_result = $field_query->execute();
-        if ($field = $field_result->fetchAssoc()) {
-            foreach ($field as $key => $value) {
+        $nid = 0;
+        foreach ($node as $key => $value) {
+            // If key is the nid, store that
+            if ($key == 'nid') {
+                $nid = $value;
+            }
+            // Otherwise, the key is a †ext field and the value is content
+            else {
                 $words = $words + str_word_count($value, 0);
                 if ($value) {
                     $content[$key] = $value;
                 }
             }
         }
+
         if (variable_get('dewy_content', 1)) {
-            $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('content' => $content, 'words' => $words)));
+            $stream->fwrite(json_encode($nid).':'.json_encode(array('content' => $content, 'words' => $words)));
         }
         else {
-            $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('words' => $words)));
+            $stream->fwrite(json_encode($nid).':'.json_encode(array('words' => $words)));
         }
     }
     $stream->fwrite('},');
