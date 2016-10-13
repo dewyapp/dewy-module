@@ -95,6 +95,7 @@ function dewy_report() {
     $stream->fwrite('"users":{');
     $result = db_query("SELECT users.name AS name, mail, created, access AS last_access, status, GROUP_CONCAT(role.name SEPARATOR ',') AS roles FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid GROUP BY name");
     $first_row = TRUE;
+    $i=0;
     while ($user = $result->fetchAssoc()) {
         if (!$first_row) { 
             $stream->fwrite(',');
@@ -103,8 +104,9 @@ function dewy_report() {
         }
         // Obfuscate usernames and email addresses if necessary
         if (!variable_get('dewy_users', 1)) {
-            $user['name'] = 'x';
-            $user['mail'] = 'x';
+            $i++;
+            $user['name'] = "$i";
+            $user['mail'] = '-1';
         }
         $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'created' => (float)$user['created'], 'last_access' => (float)$user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
     }
