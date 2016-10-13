@@ -44,7 +44,6 @@ function dewy_report() {
             $first_row = FALSE;
         }
 
-        $words = 0;
         $content = array();
         $nid = 0;
         foreach ($node as $key => $value) {
@@ -53,20 +52,12 @@ function dewy_report() {
                 $nid = $value;
             }
             // Otherwise, the key is a †ext field and the value is content
-            else {
-                $words = $words + str_word_count($value, 0);
-                if ($value) {
-                    $content[$key] = $value;
-                }
+            else if ($value) {
+                $content[$key] = $value;
             }
         }
 
-        if (variable_get('dewy_content', 1)) {
-            $stream->fwrite(json_encode($nid).':'.json_encode(array('content' => $content, 'words' => $words)));
-        }
-        else {
-            $stream->fwrite(json_encode($nid).':'.json_encode(array('words' => $words)));
-        }
+        $stream->fwrite(json_encode($nid).':'.json_encode($content));
     }
     $stream->fwrite('},');
     unset($text_fields);
@@ -83,12 +74,8 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        if (variable_get('dewy_content', 1)) {
-            $stream->fwrite(json_encode($block['bid']).':'.json_encode(array('content' => $block['body'], 'words' => str_word_count($block['body'], 0))));
-        }
-        else {
-            $stream->fwrite(json_encode($block['bid']).':'.json_encode(array('words' => str_word_count($block['body'], 0))));
-        }
+
+        $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
     }
     $stream->fwrite('},');
 

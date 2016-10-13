@@ -110,9 +110,29 @@ function dewy_report() {
     }
     $stream->fwrite('},');
 
+    // Get all text fields on the site
+    $text_fields = array();
+    $fields = field_info_fields();
+    foreach ($fields as $field) {
+        if ($field['module'] == 'text') {
+            array_push($text_fields, $field);
+        }
+    }
+    unset($fields);
+
     // Get all node metadata
     $stream->fwrite('"nodes":{');
-    $result = db_query("SELECT nid, type, created, changed, status FROM node");
+
+    $query = db_select('node', 'n');
+    $query->fields('n', array('nid', 'type', 'created', 'changed', 'status'));
+    foreach ($text_fields as $field) {
+        $table = _field_sql_storage_tablename($field);
+        $column = _field_sql_storage_columnname($field['field_name'], 'value');
+        $query->leftJoin($table, NULL, "$table.entity_id = n.nid");
+        $query->fields(NULL, array($column));
+    }
+    $result = $query->execute();
+
     $first_row = TRUE;
     while ($node = $result->fetchAssoc()) {
         if (!$first_row) { 
@@ -120,7 +140,43 @@ function dewy_report() {
         } else {
             $first_row = FALSE;
         }
-        $stream->fwrite(json_encode($node['nid']).':'.json_encode(array('created' => (float)$node['created'], 'changed' => (float)$node['changed'], 'status'=> (int)$node['status'], 'type' => $node['type'])));
+
+        $words = 0;
+        $data = array('content' => array());
+        $nid = 0;
+        foreach ($node as $key => $value) {
+            // If key is a node value, store it
+            if ($key == 'nid' || $key == 'type' || $key == 'created' || $key == 'changed' || $key == 'status') {
+                $data[$key] = $value;
+            }
+            // Otherwise, the key is a †ext field and the value is content
+            else {
+                $words = $words + str_word_count($value, 0);
+                if ($value) {
+                    $content[$key] = $value;
+                }
+            }
+        }
+
+        $stream->fwrite(json_encode($data['nid']).':'.json_encode(array('created' => (float)$data['created'], 'changed' => (float)$data['changed'], 'status'=> (int)$data['status'], 'type' => $data['type'], 'words' => $words)));
+    }
+    $stream->fwrite('},');
+    unset($text_fields);
+
+    // Get all block content
+    $stream->fwrite('"blocks":{');
+    $result = db_select('block_custom', 'block')
+    ->fields('block', array('bid', 'body'))
+    ->execute();
+    $first_row = TRUE;
+    while ($block = $result->fetchAssoc()) {
+        if (!$first_row) { 
+            $stream->fwrite(',');
+        } else {
+            $first_row = FALSE;
+        }
+
+        $stream->fwrite(json_encode($block['bid']).':'.json_encode(array('words' => str_word_count($block['body'],0))));
     }
     $stream->fwrite('},');
 
