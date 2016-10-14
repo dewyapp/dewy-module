@@ -25,8 +25,8 @@ function dewy_report() {
     // Get Drupal version
     $stream->fwrite('"drupal_core":'.json_encode(VERSION).',');
 
-    // Get PHP version
-    $stream->fwrite('"php_version":'.json_encode(PHP_VERSION).',');
+    // Get PHP details
+    $stream->fwrite('"php":'.json_encode(array('version' => PHP_VERSION, 'max_execution_time' => ini_get('max_execution_time'), 'memory_limit' => ini_get('memory_limit'))).',');
     
     // Get path accesses
     if (variable_get('dewy_traffic', 1)) {
