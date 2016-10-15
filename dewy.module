@@ -52,8 +52,8 @@ function dewy_menu_site_status_alter(&$menu_site_status, $path) {
 }
 
 function dewy_report_access_callback($type) {
-    if ($type != "content" || ($type == "content" && variable_get('dewy_content', 1))) {
-        if (variable_get('dewy_token', 0)) {
+    if (variable_get('dewy_token', 0)) {
+        if ($type != "content" || ($type == "content" && variable_get('dewy_content', 1))) {
             if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
                 return TRUE;
             }
@@ -63,7 +63,7 @@ function dewy_report_access_callback($type) {
                 }
             }
             else {
-                die("Could not confirm Dewy's IP address. Is your site behind a proxy?");
+                die("ERROR: Could not confirm Dewy's IP address");
             }
         }
     }
