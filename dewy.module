@@ -62,9 +62,6 @@ function dewy_report_access_callback($type) {
                     return TRUE;
                 }
             }
-            else {
-                die("ERROR: Could not confirm Dewy's IP address");
-            }
         }
     }
     return FALSE;
@@ -182,16 +179,11 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
         );
         $result = drupal_http_request('https://api.dewy.io/site', $options);
         if ($result->code != '200') {
-            if ($result->code == '500' || $result->code == '503') {
-                form_set_error('dewy_api_key','Dewy is unreachable, the API key cannot be verified at this time.');
+            if (isset($result->data)) {
+                form_set_error('dewy_api_key', $result->data.' ('.$result->code.') ');
             }
             else {
-                if (isset($result->data)) {
-                    form_set_error('dewy_api_key', $result->data);
-                }
-                else {
-                    form_set_error('dewy_api_key', $result->error);
-                }
+                form_set_error('dewy_api_key', $result->code);
             }
         }
     }
