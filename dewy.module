@@ -52,16 +52,30 @@ function dewy_menu_site_status_alter(&$menu_site_status, $path) {
 }
 
 function dewy_report_access_callback($type) {
+    // Reports are only available if a token is in place through enabling Dewy to report on the site
     if (variable_get('dewy_token', 0)) {
+
+        // If this is a content report and content reporting is not enabled, the report won't be available
         if ($type != "content" || ($type == "content" && variable_get('dewy_content', 1))) {
-            if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
+
+            // Local users with administer site configuration permission can view the report
+            if (user_access('administer site configuration')) {
                 return TRUE;
             }
-            else if (ip_address() == gethostbyname('api.dewy.io')) {
+
+            // The central Dewy service can view the report
+            // This will fail if the site is behind a proxy and reverse proxy server configuration has not been set
+            // Follow the instructions in settings.php to allow reverse proxy to pass on the client IP address
+            if (ip_address() == gethostbyname('api.dewy.io')) {
                 if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
                     return TRUE;
                 }
             }
+
+            // The localhost can view the report, this is for debugging and is commented out for production use
+            // if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
+            //     return TRUE;
+            // }
         }
     }
     return FALSE;
