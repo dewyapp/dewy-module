@@ -62,6 +62,9 @@ function dewy_report_access_callback($type) {
                     return TRUE;
                 }
             }
+            else {
+                die("Could not confirm Dewy's IP address. Is your site behind a proxy?");
+            }
         }
     }
     return FALSE;
