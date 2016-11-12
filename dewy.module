@@ -86,8 +86,8 @@ function dewy_report_access_callback($type) {
       // The localhost can view the report, this is for debugging and is
       // commented out for production use.
       // if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
-      //   return TRUE;
-      // }
+      // return TRUE;
+      // }.
     }
   }
   return FALSE;
@@ -106,7 +106,7 @@ function dewy_page_build(&$page) {
       ),
     );
     $page['content'][] = array(
-      '#attached' => array(  
+      '#attached' => array(
         'js' => array(
           drupal_get_path('module', 'dewy') . '/js/dewy_counter.js' => array(),
         ),
@@ -171,7 +171,7 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
   if ($form_state['values']['dewy_enabled'] && !variable_get('dewy_token', 0)) {
     DewyToken::createToken();
   }
-  else if (!$form_state['values']['dewy_enabled']) {
+  elseif (!$form_state['values']['dewy_enabled']) {
     DewyToken::deleteToken();
   }
 
@@ -198,13 +198,13 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
   else {
     // Attempt to register the site with Dewy.
     $data =
-      'apikey=' . $form_state['values']['dewy_api_key'] . '&' .
-      'token=' . variable_get('dewy_token') . '&' .
-      'baseurl=' . $base_url . '&' .
-      'enabled=' . $form_state['values']['dewy_enabled'] . '&' .
-      'read_users=' . $form_state['values']['dewy_users'] . '&' .
-      'read_content=' . $form_state['values']['dewy_content'] . '&' .
-      'read_traffic=' . $form_state['values']['dewy_traffic'];
+      'apikey=' . $form_state['values']['dewy_api_key'] .
+      '&token=' . variable_get('dewy_token') .
+      '&baseurl=' . $base_url .
+      '&enabled=' . $form_state['values']['dewy_enabled'] .
+      '&read_users=' . $form_state['values']['dewy_users'] .
+      '&read_content=' . $form_state['values']['dewy_content'] .
+      '&read_traffic=' . $form_state['values']['dewy_traffic'];
 
     $options = array(
       'method' => 'POST',

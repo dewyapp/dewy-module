@@ -42,7 +42,7 @@ function dewy_requirements($phase) {
  * Implements hook_install().
  */
 function dewy_uninstall() {
-  // Remove variables
+  // Remove variables.
   variable_del('dewy_enabled');
   variable_del('dewy_users');
   variable_del('dewy_content');
@@ -56,7 +56,7 @@ function dewy_uninstall() {
  * Implements hook_install().
  */
 function dewy_install() {
-  // Set variables
+  // Set variables.
   variable_set('dewy_count_date', time());
 }
 

@@ -38,9 +38,11 @@ function dewy_report() {
   $stream->fwrite('"php":' . json_encode(array(
     'version' => PHP_VERSION,
     'max_execution_time' => ini_get('max_execution_time'),
-    'memory_limit' => ini_get('memory_limit'))) . ',',
+    'memory_limit' => ini_get('memory_limit')
+    )
+  ) . ',',
   );
- 
+
   // Get path accesses.
   if (variable_get('dewy_traffic', 1)) {
     $stream->fwrite('"traffic":{');
@@ -102,7 +104,8 @@ function dewy_report() {
     $database = $GLOBALS['databases']['default']['default']['database'];
     $db_size = db_query("SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) as 'mb' FROM information_schema.tables WHERE table_schema = :database", array(':database' => $database))->fetchField();
   }
-  catch (Exception $e) { }
+  catch (Exception $e) {
+  }
   $stream->fwrite('"db_size":' . json_encode((float) $db_size) . ',');
 
   // Get all users, roles and last signons.
@@ -123,7 +126,14 @@ function dewy_report() {
       $user['name'] = "$i";
       $user['mail'] = '-1';
     }
-    $stream->fwrite(json_encode($user['name']) . ':' . json_encode(array('mail' => $user['mail'], 'created' => (float) $user['created'], 'last_access' => (float) $user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
+    $stream->fwrite(json_encode($user['name']) . ':' . json_encode(array(
+      'mail' => $user['mail'],
+      'created' => (float) $user['created'],
+      'last_access' => (float) $user['last_access'],
+      'status' => $user['status'],
+      'roles' => explode(',', $user['roles'])
+      )
+    ));
   }
   $stream->fwrite('},');
 
@@ -172,7 +182,14 @@ function dewy_report() {
       }
     }
 
-    $stream->fwrite(json_encode($data['nid']) . ':' . json_encode(array('created' => (float) $data['created'], 'changed' => (float) $data['changed'], 'status' => (int) $data['status'], 'type' => $data['type'], 'words' => $words)));
+    $stream->fwrite(json_encode($data['nid']) . ':' . json_encode(array(
+      'created' => (float) $data['created'],
+      'changed' => (float) $data['changed'],
+      'status' => (int) $data['status'],
+      'type' => $data['type'],
+      'words' => $words
+      )
+    ));
   }
   $stream->fwrite('},');
   unset($text_fields);
@@ -207,9 +224,9 @@ function dewy_report() {
     if ($schemas !== FALSE) {
       $latest_schema = max($schemas);
     }
-    // Unfortunately I need to show hidden modules, because when you are logged out,
-    // many essential modules are set to hidden (that aren't set to hidden when logged in)
-    // for a reason I haven't figured out yet.
+    // Unfortunately I need to show hidden modules, because when you 
+    // are logged out, many essential modules are set to hidden (that aren't
+    // set to hidden when logged in) for a reason I haven't figured out yet.
     // if (!$module_info->info['hidden']) {
     // Instead we can hide modules that are core and under package 'Testing',
     // this seems to hide the modules we don't care about.
@@ -221,7 +238,7 @@ function dewy_report() {
               $module => array(
                 'schema' => (float) $module_info->schema_version,
                 'latest_schema' => (float) $latest_schema,
-                'dependencies' => $module_info->info['dependencies']
+                'dependencies' => $module_info->info['dependencies'],
               )
             ),
             'version' => $module_info->info['version'],
@@ -241,7 +258,7 @@ function dewy_report() {
   unset($modules);
   unset($projects);
 
-  // Get all custom themes
+  // Get all custom themes.
   $stream->fwrite('"themes":{');
   $themes = list_themes(TRUE);
   $first_row = TRUE;
@@ -257,7 +274,7 @@ function dewy_report() {
   $stream->fwrite('},');
   unset($themes);
 
-  // Get all variables
+  // Get all variables.
   $stream->fwrite('"variables":{');
   $result = db_query("SELECT name FROM variable");
   $first_row = TRUE;
@@ -275,7 +292,7 @@ function dewy_report() {
   // Report benchmark.
   $time_end = microtime(TRUE);
   $time = $time_end - $time_start;
-  $stream->fwrite('"benchmark":'.$time);
+  $stream->fwrite('"benchmark":' . $time);
 
   // Close stream.
   $stream->fwrite('}');

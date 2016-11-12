@@ -34,7 +34,7 @@ function dewy_report() {
 
   // Get all node content.
   $stream->fwrite('"nodes":{');
- 
+
   $query = db_select('node', 'n');
   $query->fields('n', array('nid'));
   foreach ($text_fields as $field) {
@@ -49,7 +49,8 @@ function dewy_report() {
   while ($node = $result->fetchAssoc()) {
     if (!$first_row) {
       $stream->fwrite(',');
-    } else {
+    }
+    else {
       $first_row = FALSE;
     }
 
@@ -61,7 +62,7 @@ function dewy_report() {
         $nid = $value;
       }
       // Otherwise, the key is a †ext field and the value is content.
-      else if ($value) {
+      elseif ($value) {
         $content[$key] = $value;
       }
     }
@@ -74,13 +75,14 @@ function dewy_report() {
   // Get all block content
   $stream->fwrite('"blocks":{');
   $result = db_select('block_custom', 'block')
-  ->fields('block', array('bid', 'body'))
-  ->execute();
+    ->fields('block', array('bid', 'body'))
+    ->execute();
   $first_row = TRUE;
   while ($block = $result->fetchAssoc()) {
     if (!$first_row) {
       $stream->fwrite(',');
-    } else {
+    }
+    else {
       $first_row = FALSE;
     }
 
@@ -88,11 +90,11 @@ function dewy_report() {
   }
   $stream->fwrite('},');
 
-  // Report benchmark
+  // Report benchmark.
   $time_end = microtime(TRUE);
   $time = $time_end - $time_start;
   $stream->fwrite('"benchmark":' . $time);
 
-  // Close stream
+  // Close stream.
   $stream->fwrite('}');
 }
