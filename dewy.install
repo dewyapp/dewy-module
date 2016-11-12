@@ -7,25 +7,27 @@
 
 function dewy_requirements($phase) {
   $requirements = array();
+  // Ensure translations don't break during installation.
+  $t = get_t();
   if ($phase == 'runtime') {
     $requirements['dewy_php_exec_time'] = array(
-        'title' => t('Dewy audit execution time'),
+        'title' => $t('Dewy audit execution time'),
         'severity' => REQUIREMENT_OK,
-        'value' => t('Dewy can control the time allowed for audit execution'),
+        'value' => $t('Dewy can control the time allowed for audit execution'),
     );
 
     set_time_limit(0);
     $seconds = ini_get('max_execution_time');
     if ($seconds != 0) {
         if ($seconds < 60) {
-            $requirements['dewy_php_exec_time']['description'] = t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds which is likely insufficient to complete an audit of this site. This can be fixed by increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
+            $requirements['dewy_php_exec_time']['description'] = $t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds which is likely insufficient to complete an audit of this site. This can be fixed by increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
             $requirements['dewy_php_exec_time']['severity'] = REQUIREMENT_ERROR;
-            $requirements['dewy_php_exec_time']['value'] = t('Restricted and insufficient');
+            $requirements['dewy_php_exec_time']['value'] = $t('Restricted and insufficient');
         }
         else {
-            $requirements['dewy_php_exec_time']['description'] = t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds, which may be sufficient, but if Dewy is unable to audit this site without errors, consider increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
+            $requirements['dewy_php_exec_time']['description'] = $t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds, which may be sufficient, but if Dewy is unable to audit this site without errors, consider increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
             $requirements['dewy_php_exec_time']['severity'] = REQUIREMENT_WARNING;
-            $requirements['dewy_php_exec_time']['value'] = t('Restricted');
+            $requirements['dewy_php_exec_time']['value'] = $t('Restricted');
         }
     }
   }
