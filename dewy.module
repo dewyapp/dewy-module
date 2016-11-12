@@ -66,7 +66,8 @@ function dewy_report_access_callback($type) {
     // the report won't be available.
     if ($type != "content" || ($type == "content" && variable_get('dewy_content', 1))) {
 
-      // Local users with administer site configuration permission can view the report
+      // Local users with administer site configuration permission can
+      // view the report.
       if (user_access('administer site configuration')) {
         return TRUE;
       }
@@ -82,8 +83,8 @@ function dewy_report_access_callback($type) {
         }
       }
 
-      // The localhost can view the report, this is for debugging and is commented
-      // out for production use.
+      // The localhost can view the report, this is for debugging and is
+      // commented out for production use.
       // if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
       //   return TRUE;
       // }
@@ -98,7 +99,7 @@ function dewy_report_access_callback($type) {
 function dewy_page_build(&$page) {
   if (variable_get('dewy_content', 1)) {
     $settings = array(
-      'url' => url(drupal_get_path('module', 'dewy').'/php/dewy_counter.php'),
+      'url' => url(drupal_get_path('module', 'dewy') . '/php/dewy_counter.php'),
       'data' => array(
         'path' => current_path(),
         'drupal' => DRUPAL_ROOT,
@@ -186,24 +187,24 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
   // Test that the site URL is available from the web.
   $options = array(
     'method' => 'POST',
-    'data' => 'token='.variable_get('dewy_token'),
+    'data' => 'token=' . variable_get('dewy_token'),
     'timeout' => 15,
     'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
   );
-  $result = drupal_http_request($base_url.'/admin/reports/dewy', $options);
+  $result = drupal_http_request($base_url . '/admin/reports/dewy', $options);
   if ($result->code == '404' && $form_state['values']['dewy_enabled']) {
-    form_set_error('dewy_api_key', t('This site is not reachable at the base_url provided (@base-url). The base_url can be specified in this site\'s settings.php file, or if using Drush, the \'--uri=SITE\' flag.', array('@base-url' => $base_url)));
+    form_set_error('dewy_api_key', t("This site is not reachable at the base_url provided (@base-url). The base_url can be specified in this site's settings.php file, or if using Drush, the '--uri=SITE' flag.", array('@base-url' => $base_url)));
   }
   else {
     // Attempt to register the site with Dewy.
     $data =
-      'apikey='.$form_state['values']['dewy_api_key'].'&'.
-      'token='.variable_get('dewy_token').'&'.
-      'baseurl='.$base_url.'&'.
-      'enabled='.$form_state['values']['dewy_enabled'].'&'.
-      'read_users='.$form_state['values']['dewy_users'].'&'.
-      'read_content='.$form_state['values']['dewy_content'].'&'.
-      'read_traffic='.$form_state['values']['dewy_traffic'];
+      'apikey=' . $form_state['values']['dewy_api_key'] . '&' .
+      'token=' . variable_get('dewy_token') . '&' .
+      'baseurl=' . $base_url . '&' .
+      'enabled=' . $form_state['values']['dewy_enabled'] . '&' .
+      'read_users=' . $form_state['values']['dewy_users'] . '&' .
+      'read_content=' . $form_state['values']['dewy_content'] . '&' .
+      'read_traffic=' . $form_state['values']['dewy_traffic'];
 
     $options = array(
       'method' => 'POST',
@@ -214,7 +215,7 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
     $result = drupal_http_request('https://api.dewy.io/site', $options);
     if ($result->code != '200') {
       if (isset($result->data)) {
-        form_set_error('dewy_api_key', $result->data.' ('.$result->code.') ');
+        form_set_error('dewy_api_key', $result->data . ' (' . $result->code . ') ');
       }
       else {
         form_set_error('dewy_api_key', $result->code);

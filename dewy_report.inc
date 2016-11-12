@@ -35,7 +35,11 @@ function dewy_report() {
   $stream->fwrite('"drupal_core":' . json_encode(VERSION) . ',');
 
   // Get PHP details.
-  $stream->fwrite('"php":' . json_encode(array('version' => PHP_VERSION, 'max_execution_time' => ini_get('max_execution_time'), 'memory_limit' => ini_get('memory_limit'))) . ',');
+  $stream->fwrite('"php":' . json_encode(array(
+    'version' => PHP_VERSION,
+    'max_execution_time' => ini_get('max_execution_time'),
+    'memory_limit' => ini_get('memory_limit'))) . ',',
+  );
  
   // Get path accesses.
   if (variable_get('dewy_traffic', 1)) {
@@ -54,7 +58,7 @@ function dewy_report() {
           else {
             $first_row = FALSE;
           }
-          $stream->fwrite(json_encode($path['path']) . ':' . json_encode(array('hits' => (float)$path['hits'], 'last_access' => (float)$path['lastaccess'])));
+          $stream->fwrite(json_encode($path['path']) . ':' . json_encode(array('hits' => (float) $path['hits'], 'last_access' => (float) $path['lastaccess'])));
         }
       }
     }
@@ -68,7 +72,7 @@ function dewy_report() {
   $path['private'] = variable_get('file_private_path');
 
   $first_row = TRUE;
-  foreach($types as $type) {
+  foreach ($types as $type) {
     if (!$first_row) {
       $stream->fwrite(',');
     }
@@ -81,7 +85,7 @@ function dewy_report() {
 
     if (is_dir($path[$type])) {
       $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path[$type], RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
-      foreach($iterator as $file) {
+      foreach ($iterator as $file) {
         if (!$file->isDir()) {
           $count++;
           $size += number_format($file->getSize() / 1048576, 2);
@@ -99,13 +103,13 @@ function dewy_report() {
     $db_size = db_query("SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) as 'mb' FROM information_schema.tables WHERE table_schema = :database", array(':database' => $database))->fetchField();
   }
   catch (Exception $e) { }
-  $stream->fwrite('"db_size":' . json_encode((float)$db_size) . ',');
+  $stream->fwrite('"db_size":' . json_encode((float) $db_size) . ',');
 
   // Get all users, roles and last signons.
   $stream->fwrite('"users":{');
   $result = db_query("SELECT users.name AS name, mail, created, access AS last_access, status, GROUP_CONCAT(role.name SEPARATOR ',') AS roles FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid GROUP BY name");
   $first_row = TRUE;
-  $i=0;
+  $i = 0;
   while ($user = $result->fetchAssoc()) {
     if (!$first_row) {
       $stream->fwrite(',');
@@ -119,7 +123,7 @@ function dewy_report() {
       $user['name'] = "$i";
       $user['mail'] = '-1';
     }
-    $stream->fwrite(json_encode($user['name']) . ':' . json_encode(array('mail' => $user['mail'], 'created' => (float)$user['created'], 'last_access' => (float)$user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
+    $stream->fwrite(json_encode($user['name']) . ':' . json_encode(array('mail' => $user['mail'], 'created' => (float) $user['created'], 'last_access' => (float) $user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
   }
   $stream->fwrite('},');
 
@@ -168,7 +172,7 @@ function dewy_report() {
       }
     }
 
-    $stream->fwrite(json_encode($data['nid']) . ':' . json_encode(array('created' => (float)$data['created'], 'changed' => (float)$data['changed'], 'status'=> (int)$data['status'], 'type' => $data['type'], 'words' => $words)));
+    $stream->fwrite(json_encode($data['nid']) . ':' . json_encode(array('created' => (float) $data['created'], 'changed' => (float) $data['changed'], 'status' => (int) $data['status'], 'type' => $data['type'], 'words' => $words)));
   }
   $stream->fwrite('},');
   unset($text_fields);
@@ -215,8 +219,8 @@ function dewy_report() {
           array(
             'modules' => array(
               $module => array(
-                'schema' => (float)$module_info->schema_version,
-                'latest_schema' => (float)$latest_schema,
+                'schema' => (float) $module_info->schema_version,
+                'latest_schema' => (float) $latest_schema,
                 'dependencies' => $module_info->info['dependencies']
               )
             ),
@@ -225,8 +229,8 @@ function dewy_report() {
       }
       else {
         $projects[$module_info->info['project']]['modules'][$module] = array(
-          'schema' => (float)$module_info->schema_version,
-          'latest_schema' => (float)$latest_schema,
+          'schema' => (float) $module_info->schema_version,
+          'latest_schema' => (float) $latest_schema,
           'dependencies' => $module_info->info['dependencies'],
         );
       }

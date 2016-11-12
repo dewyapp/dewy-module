@@ -11,7 +11,7 @@
 class DewyToken {
 
   /**
-   * uuidv4 creation.
+   * Uuidv4 creation.
    */
   private static function uuidv4($data) {
     assert(strlen($data) == 16);
