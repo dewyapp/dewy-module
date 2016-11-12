@@ -70,7 +70,6 @@ function dewy_report() {
 
         if (is_dir($path[$type])) {
             $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path[$type], RecursiveDirectoryIterator::SKIP_DOTS), RecursiveIteratorIterator::SELF_FIRST);
-            $filelist = array();
             foreach($iterator as $file) {
                 if (!$file->isDir()) {
                     $count++;
@@ -145,7 +144,6 @@ function dewy_report() {
 
         $words = 0;
         $data = array('content' => array());
-        $nid = 0;
         foreach ($node as $key => $value) {
             // If key is a node value, store it
             if ($key == 'nid' || $key == 'type' || $key == 'created' || $key == 'changed' || $key == 'status') {
@@ -154,9 +152,6 @@ function dewy_report() {
             // Otherwise, the key is a †ext field and the value is content
             else {
                 $words = $words + str_word_count($value, 0);
-                if ($value) {
-                    $content[$key] = $value;
-                }
             }
         }
 
@@ -197,7 +192,6 @@ function dewy_report() {
         // Unfortunately I need to show hidden modules, because when you are logged out, many essential modules are set to hidden 
         // (that aren't set to hidden when logged in) for a reason I haven't figured out yet
         // if (!$module_info->info['hidden']) {
-
         // Instead we can hide modules that are core and under package 'Testing', this seems to hide the modules we don't care about
         if ($module_info->info['project'] != "Drupal" && $module_info->info['package'] != "Testing") {
             if (!isset($projects[$module_info->info['project']])) {
