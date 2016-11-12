@@ -39,8 +39,7 @@ function dewy_report() {
     'version' => PHP_VERSION,
     'max_execution_time' => ini_get('max_execution_time'),
     'memory_limit' => ini_get('memory_limit'),
-    )
-  ) . ','
+  )) . ','
   );
 
   // Get path accesses.
@@ -132,8 +131,7 @@ function dewy_report() {
       'last_access' => (float) $user['last_access'],
       'status' => $user['status'],
       'roles' => explode(',', $user['roles']),
-      )
-    ));
+    )));
   }
   $stream->fwrite('},');
 
@@ -188,8 +186,7 @@ function dewy_report() {
       'status' => (int) $data['status'],
       'type' => $data['type'],
       'words' => $words,
-      )
-    ));
+    )));
   }
   $stream->fwrite('},');
   unset($text_fields);
