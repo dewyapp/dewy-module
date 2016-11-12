@@ -72,7 +72,7 @@ function dewy_report() {
   $stream->fwrite('},');
   unset($text_fields);
 
-  // Get all block content
+  // Get all block content.
   $stream->fwrite('"blocks":{');
   $result = db_select('block_custom', 'block')
     ->fields('block', array('bid', 'body'))

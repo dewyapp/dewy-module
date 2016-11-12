@@ -38,7 +38,7 @@ function dewy_report() {
   $stream->fwrite('"php":' . json_encode(array(
     'version' => PHP_VERSION,
     'max_execution_time' => ini_get('max_execution_time'),
-    'memory_limit' => ini_get('memory_limit')
+    'memory_limit' => ini_get('memory_limit'),
     )
   ) . ',',
   );
@@ -131,7 +131,7 @@ function dewy_report() {
       'created' => (float) $user['created'],
       'last_access' => (float) $user['last_access'],
       'status' => $user['status'],
-      'roles' => explode(',', $user['roles'])
+      'roles' => explode(',', $user['roles']),
       )
     ));
   }
@@ -187,7 +187,7 @@ function dewy_report() {
       'changed' => (float) $data['changed'],
       'status' => (int) $data['status'],
       'type' => $data['type'],
-      'words' => $words
+      'words' => $words,
       )
     ));
   }
@@ -208,7 +208,7 @@ function dewy_report() {
       $first_row = FALSE;
     }
 
-    $stream->fwrite(json_encode($block['bid']) . ':' . json_encode(array('words' => str_word_count($block['body'],0))));
+    $stream->fwrite(json_encode($block['bid']) . ':' . json_encode(array('words' => str_word_count($block['body'], 0))));
   }
   $stream->fwrite('},');
 
@@ -224,7 +224,7 @@ function dewy_report() {
     if ($schemas !== FALSE) {
       $latest_schema = max($schemas);
     }
-    // Unfortunately I need to show hidden modules, because when you 
+    // Unfortunately I need to show hidden modules, because when you
     // are logged out, many essential modules are set to hidden (that aren't
     // set to hidden when logged in) for a reason I haven't figured out yet.
     // if (!$module_info->info['hidden']) {
@@ -239,7 +239,7 @@ function dewy_report() {
                 'schema' => (float) $module_info->schema_version,
                 'latest_schema' => (float) $latest_schema,
                 'dependencies' => $module_info->info['dependencies'],
-              )
+              ),
             ),
             'version' => $module_info->info['version'],
           );
