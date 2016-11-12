@@ -11,24 +11,24 @@ function dewy_requirements($phase) {
   $t = get_t();
   if ($phase == 'runtime') {
     $requirements['dewy_php_exec_time'] = array(
-        'title' => $t('Dewy audit execution time'),
-        'severity' => REQUIREMENT_OK,
-        'value' => $t('Dewy can control the time allowed for audit execution'),
+      'title' => $t('Dewy audit execution time'),
+      'severity' => REQUIREMENT_OK,
+      'value' => $t('Dewy can control the time allowed for audit execution'),
     );
 
     set_time_limit(0);
     $seconds = ini_get('max_execution_time');
     if ($seconds != 0) {
-        if ($seconds < 60) {
-            $requirements['dewy_php_exec_time']['description'] = $t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds which is likely insufficient to complete an audit of this site. This can be fixed by increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
-            $requirements['dewy_php_exec_time']['severity'] = REQUIREMENT_ERROR;
-            $requirements['dewy_php_exec_time']['value'] = $t('Restricted and insufficient');
-        }
-        else {
-            $requirements['dewy_php_exec_time']['description'] = $t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds, which may be sufficient, but if Dewy is unable to audit this site without errors, consider increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
-            $requirements['dewy_php_exec_time']['severity'] = REQUIREMENT_WARNING;
-            $requirements['dewy_php_exec_time']['value'] = $t('Restricted');
-        }
+      if ($seconds < 60) {
+        $requirements['dewy_php_exec_time']['description'] = $t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds which is likely insufficient to complete an audit of this site. This can be fixed by increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
+        $requirements['dewy_php_exec_time']['severity'] = REQUIREMENT_ERROR;
+        $requirements['dewy_php_exec_time']['value'] = $t('Restricted and insufficient');
+      }
+      else {
+        $requirements['dewy_php_exec_time']['description'] = $t('Dewy is unable to control the time allowed for audit execution. Execution is set to stop after %seconds seconds, which may be sufficient, but if Dewy is unable to audit this site without errors, consider increasing the value of max_execution_time in php.ini or preventing PHP from running in safe mode.', array('%seconds' => $seconds));
+        $requirements['dewy_php_exec_time']['severity'] = REQUIREMENT_WARNING;
+        $requirements['dewy_php_exec_time']['value'] = $t('Restricted');
+      }
     }
   }
 
@@ -39,56 +39,56 @@ function dewy_requirements($phase) {
  * Implements hook_install().
  */
 function dewy_uninstall() {
-    // Remove variables
-    variable_del('dewy_enabled');
-    variable_del('dewy_users');
-    variable_del('dewy_content');
-    variable_del('dewy_traffic');
-    variable_del('dewy_api_key');
-    variable_del('dewy_token');
-    variable_del('dewy_count_date');
+  // Remove variables
+  variable_del('dewy_enabled');
+  variable_del('dewy_users');
+  variable_del('dewy_content');
+  variable_del('dewy_traffic');
+  variable_del('dewy_api_key');
+  variable_del('dewy_token');
+  variable_del('dewy_count_date');
 }
 
 /**
  * Implements hook_install().
  */
 function dewy_install() {
-    // Set variables
-    variable_set('dewy_count_date', time());
+  // Set variables
+  variable_set('dewy_count_date', time());
 }
 
 /**
  * Implements hook_schema().
  */
 function dewy_schema() {
-    $schema['dewy_counter'] = array(
-        'description' => 'Path access statistics for Dewy.',
-        'fields' => array(
-            'path' => array(
-                'description' => 'The path accessed.',
-                'type' => 'varchar',
-                'length' => 255,
-                'not null' => TRUE,
-                'default' => '',
-            ),
-            'hits' => array(
-                'description' => 'The number of times the path has been accessed since last Dewy reset.',
-                'type' => 'int',
-                'unsigned' => TRUE,
-                'not null' => TRUE,
-                'default' => 0,
-                'size' => 'big',
-            ),
-            'lastaccess' => array(
-                'type' => 'int',
-                'unsigned' => TRUE,
-                'not null' => TRUE,
-                'default' => 0,
-                'description' => 'Timestamp of last access.',
-            ),
-        ),
-        'primary key' => array('path'),
-    );
+  $schema['dewy_counter'] = array(
+    'description' => 'Path access statistics for Dewy.',
+    'fields' => array(
+      'path' => array(
+        'description' => 'The path accessed.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'hits' => array(
+        'description' => 'The number of times the path has been accessed since last Dewy reset.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'big',
+      ),
+      'lastaccess' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Timestamp of last access.',
+      ),
+    ),
+    'primary key' => array('path'),
+  );
 
-    return $schema;
+  return $schema;
 }

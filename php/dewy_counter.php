@@ -2,12 +2,12 @@
 
 /**
  * @file
- * Processes path counts for Dewy
+ * Processes path counts for Dewy.
  */
 
 /**
-* Root directory of Drupal installation.
-*/
+ * Root directory of Drupal installation.
+ */
 if (isset($_POST['drupal'])) {
   define('DRUPAL_ROOT', $_POST['drupal']);
   // Change the directory to the Drupal root.
