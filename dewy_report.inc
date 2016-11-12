@@ -1,13 +1,22 @@
 <?php
 
+/**
+ * @file
+ * Code for the Dewy report.
+ */
+
+/**
+ * Dewy report.
+ */
 function dewy_report() {
-  // If PHP stops execution at anything under 10 minutes, attempt to set time to 10 minutes
+  // If PHP stops execution at anything under 10 minutes, attempt to
+  // set time to 10 minutes.
   if (ini_get('max_execution_time') > 0 && ini_get('max_execution_time') < 600) {
     set_time_limit(600);
   }
 
   // Measure benchmark
-  $time_start = microtime(true);
+  $time_start = microtime(TRUE);
 
   // Open stream
   $stream = new SplFileObject('php://output', 'w');
@@ -27,7 +36,7 @@ function dewy_report() {
 
   // Get PHP details
   $stream->fwrite('"php":'.json_encode(array('version' => PHP_VERSION, 'max_execution_time' => ini_get('max_execution_time'), 'memory_limit' => ini_get('memory_limit'))).',');
-  
+ 
   // Get path accesses
   if (variable_get('dewy_traffic', 1)) {
     $stream->fwrite('"traffic":{');
@@ -39,9 +48,10 @@ function dewy_report() {
     while ($path = $result->fetchAssoc()) {
       foreach ($ignores as $ignore) {
         if (substr($path['path'], 0, strlen($ignore)) != $ignore) {
-          if (!$first_row) { 
+          if (!$first_row) {
             $stream->fwrite(',');
-          } else {
+          }
+          else {
             $first_row = FALSE;
           }
           $stream->fwrite(json_encode($path['path']).':'.json_encode(array('hits' => (float)$path['hits'], 'last_access' => (float)$path['lastaccess'])));
@@ -59,9 +69,10 @@ function dewy_report() {
 
   $first_row = TRUE;
   foreach($types as $type) {
-    if (!$first_row) { 
+    if (!$first_row) {
       $stream->fwrite(',');
-    } else {
+    }
+    else {
       $first_row = FALSE;
     }
 
@@ -96,9 +107,10 @@ function dewy_report() {
   $first_row = TRUE;
   $i=0;
   while ($user = $result->fetchAssoc()) {
-    if (!$first_row) { 
+    if (!$first_row) {
       $stream->fwrite(',');
-    } else {
+    }
+    else {
       $first_row = FALSE;
     }
     // Obfuscate usernames and email addresses if necessary
@@ -136,9 +148,10 @@ function dewy_report() {
 
   $first_row = TRUE;
   while ($node = $result->fetchAssoc()) {
-    if (!$first_row) { 
+    if (!$first_row) {
       $stream->fwrite(',');
-    } else {
+    }
+    else {
       $first_row = FALSE;
     }
 
@@ -163,13 +176,14 @@ function dewy_report() {
   // Get all block content
   $stream->fwrite('"blocks":{');
   $result = db_select('block_custom', 'block')
-  ->fields('block', array('bid', 'body'))
-  ->execute();
+    ->fields('block', array('bid', 'body'))
+    ->execute();
   $first_row = TRUE;
   while ($block = $result->fetchAssoc()) {
-    if (!$first_row) { 
+    if (!$first_row) {
       $stream->fwrite(',');
-    } else {
+    }
+    else {
       $first_row = FALSE;
     }
 
@@ -189,28 +203,31 @@ function dewy_report() {
     if ($schemas !== FALSE) {
       $latest_schema = max($schemas);
     }
-    // Unfortunately I need to show hidden modules, because when you are logged out, many essential modules are set to hidden 
-    // (that aren't set to hidden when logged in) for a reason I haven't figured out yet
+    // Unfortunately I need to show hidden modules, because when you are logged out,
+    // many essential modules are set to hidden (that aren't set to hidden when logged in)
+    // for a reason I haven't figured out yet.
     // if (!$module_info->info['hidden']) {
-    // Instead we can hide modules that are core and under package 'Testing', this seems to hide the modules we don't care about
+    // Instead we can hide modules that are core and under package 'Testing',
+    // this seems to hide the modules we don't care about.
     if ($module_info->info['project'] != "Drupal" && $module_info->info['package'] != "Testing") {
       if (!isset($projects[$module_info->info['project']])) {
-        $projects[$module_info->info['project']] = 
+        $projects[$module_info->info['project']] =
           array(
             'modules' => array(
               $module => array(
-                'schema' => (float)$module_info->schema_version, 
+                'schema' => (float)$module_info->schema_version,
                 'latest_schema' => (float)$latest_schema,
                 'dependencies' => $module_info->info['dependencies']
               )
-            ), 
-            'version' => $module_info->info['version']
+            ),
+            'version' => $module_info->info['version'],
           );
-      } else {
+      }
+      else {
         $projects[$module_info->info['project']]['modules'][$module] = array(
-          'schema' => (float)$module_info->schema_version, 
+          'schema' => (float)$module_info->schema_version,
           'latest_schema' => (float)$latest_schema,
-          'dependencies' => $module_info->info['dependencies']
+          'dependencies' => $module_info->info['dependencies'],
         );
       }
     }
@@ -225,9 +242,10 @@ function dewy_report() {
   $themes = list_themes(TRUE);
   $first_row = TRUE;
   foreach ($themes as $theme) {
-    if (!$first_row) { 
+    if (!$first_row) {
       $stream->fwrite(',');
-    } else {
+    }
+    else {
       $first_row = FALSE;
     }
     $stream->fwrite(json_encode($theme->name).':'.json_encode(array('version' => $theme->info['version'], 'status' => $theme->status)));
@@ -240,9 +258,10 @@ function dewy_report() {
   $result = db_query("SELECT name FROM variable");
   $first_row = TRUE;
   while ($variable = $result->fetchAssoc()) {
-    if (!$first_row) { 
+    if (!$first_row) {
       $stream->fwrite(',');
-    } else {
+    }
+    else {
       $first_row = FALSE;
     }
     $stream->fwrite(json_encode($variable['name']).':'.json_encode(variable_get($variable['name'])));

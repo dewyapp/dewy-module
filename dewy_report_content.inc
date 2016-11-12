@@ -1,13 +1,22 @@
 <?php
 
+/**
+ * @file
+ * Code for the Dewy content report.
+ */
+
+/**
+ * Dewy content report.
+ */
 function dewy_report() {
-  // If PHP stops execution at anything under 10 minutes, attempt to set time to 10 minutes
+  // If PHP stops execution at anything under 10 minutes, attempt to
+  // set time to 10 minutes.
   if (ini_get('max_execution_time') > 0 && ini_get('max_execution_time') < 600) {
     set_time_limit(600);
   }
 
   // Measure benchmark
-  $time_start = microtime(true);
+  $time_start = microtime(TRUE);
 
   // Open stream
   $stream = new SplFileObject('php://output', 'w');
@@ -25,7 +34,7 @@ function dewy_report() {
 
   // Get all node content
   $stream->fwrite('"nodes":{');
-  
+ 
   $query = db_select('node', 'n');
   $query->fields('n', array('nid'));
   foreach ($text_fields as $field) {
@@ -38,7 +47,7 @@ function dewy_report() {
 
   $first_row = TRUE;
   while ($node = $result->fetchAssoc()) {
-    if (!$first_row) { 
+    if (!$first_row) {
       $stream->fwrite(',');
     } else {
       $first_row = FALSE;
@@ -47,11 +56,11 @@ function dewy_report() {
     $content = array();
     $nid = 0;
     foreach ($node as $key => $value) {
-      // If key is the nid, store that
+      // If key is the nid, store that.
       if ($key == 'nid') {
         $nid = $value;
       }
-      // Otherwise, the key is a †ext field and the value is content
+      // Otherwise, the key is a †ext field and the value is content.
       else if ($value) {
         $content[$key] = $value;
       }
@@ -69,7 +78,7 @@ function dewy_report() {
   ->execute();
   $first_row = TRUE;
   while ($block = $result->fetchAssoc()) {
-    if (!$first_row) { 
+    if (!$first_row) {
       $stream->fwrite(',');
     } else {
       $first_row = FALSE;

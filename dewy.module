@@ -1,13 +1,13 @@
 <?php
+
 /**
  * @file
- * Code for the Dewy module
+ * Code for the Dewy module.
  */
 
 /**
- * Implements hook_menu()
+ * Implements hook_menu().
  */
-
 function dewy_menu() {
   $items = array();
 
@@ -43,6 +43,9 @@ function dewy_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_menu_site_status_alter().
+ */
 function dewy_menu_site_status_alter(&$menu_site_status, $path) {
   if ($menu_site_status == MENU_SITE_OFFLINE && user_is_anonymous() ) {
     if ($path == 'admin/reports/dewy') {
@@ -51,11 +54,16 @@ function dewy_menu_site_status_alter(&$menu_site_status, $path) {
   }
 }
 
+/**
+ * Report access callback.
+ */
 function dewy_report_access_callback($type) {
-  // Reports are only available if a token is in place through enabling Dewy to report on the site
+  // Reports are only available if a token is in place through enabling
+  // Dewy to report on the site.
   if (variable_get('dewy_token', 0)) {
 
-    // If this is a content report and content reporting is not enabled, the report won't be available
+    // If this is a content report and content reporting is not enabled,
+    // the report won't be available.
     if ($type != "content" || ($type == "content" && variable_get('dewy_content', 1))) {
 
       // Local users with administer site configuration permission can view the report
@@ -63,16 +71,19 @@ function dewy_report_access_callback($type) {
         return TRUE;
       }
 
-      // The central Dewy service can view the report
-      // This will fail if the site is behind a proxy and reverse proxy server configuration has not been set
-      // Follow the instructions in settings.php to allow reverse proxy to pass on the client IP address
+      // The central Dewy service can view the report.
+      // This will fail if the site is behind a proxy and reverse proxy
+      // server configuration has not been set.
+      // Follow the instructions in settings.php to allow reverse proxy
+      // to pass on the client IP address.
       if (ip_address() == gethostbyname('api.dewy.io')) {
         if (isset($_POST['token']) && $_POST['token'] == variable_get('dewy_token')) {
           return TRUE;
         }
       }
 
-      // The localhost can view the report, this is for debugging and is commented out for production use
+      // The localhost can view the report, this is for debugging and is commented
+      // out for production use.
       // if (ip_address() == '127.0.0.1' || ip_address() == '::1') {
       //   return TRUE;
       // }
@@ -81,6 +92,9 @@ function dewy_report_access_callback($type) {
   return FALSE;
 }
 
+/**
+ * Implements hook_page_build().
+ */
 function dewy_page_build(&$page) {
   if (variable_get('dewy_content', 1)) {
     $settings = array(
@@ -91,7 +105,7 @@ function dewy_page_build(&$page) {
       ),
     );
     $page['content'][] = array(
-      '#attached' => array(   
+      '#attached' => array(  
         'js' => array(
           drupal_get_path('module', 'dewy') . '/js/dewy_counter.js' => array(),
         ),
@@ -104,6 +118,9 @@ function dewy_page_build(&$page) {
   }
 }
 
+/**
+ * Dewy page config.
+ */
 function dewy_config($form, &$form_state) {
   $form['dewy_enabled'] = array(
     '#type' => 'checkbox',
@@ -143,27 +160,30 @@ function dewy_config($form, &$form_state) {
   return system_settings_form($form);
 }
 
+/**
+ * Config form validation.
+ */
 function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
   global $base_url;
 
-  // Create a token to send Dewy so only Dewy can talk to this site
+  // Create a token to send Dewy so only Dewy can talk to this site.
   if ($form_state['values']['dewy_enabled'] && !variable_get('dewy_token', 0)) {
     DewyToken::createToken();
-  } 
+  }
   else if (!$form_state['values']['dewy_enabled']) {
     DewyToken::deleteToken();
   }
 
-  // Clear any traffic data if traffic has been turned off
+  // Clear any traffic data if traffic has been turned off.
   if (!$form_state['values']['dewy_traffic'] && variable_get('dewy_traffic', 1)) {
     db_truncate('dewy_counter')->execute();
   }
-  // Reset recorded since value if traffic has been turned on
+  // Reset recorded since value if traffic has been turned on.
   if ($form_state['values']['dewy_traffic'] && !variable_get('dewy_traffic', 1)) {
     variable_set('dewy_count_date', time());
   }
 
-  // Test that the site URL is available from the web
+  // Test that the site URL is available from the web.
   $options = array(
     'method' => 'POST',
     'data' => 'token='.variable_get('dewy_token'),
@@ -175,8 +195,8 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
     form_set_error('dewy_api_key', t('This site is not reachable at the base_url provided (@base-url). The base_url can be specified in this site\'s settings.php file, or if using Drush, the \'--uri=SITE\' flag.', array('@base-url' => $base_url)));
   }
   else {
-    // Attempt to register the site with Dewy
-    $data = 
+    // Attempt to register the site with Dewy.
+    $data =
       'apikey='.$form_state['values']['dewy_api_key'].'&'.
       'token='.variable_get('dewy_token').'&'.
       'baseurl='.$base_url.'&'.

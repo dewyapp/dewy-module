@@ -2,9 +2,12 @@
 
 /**
  * @file
- * Install and uninstall functions for Dewy
+ * Install and uninstall functions for Dewy.
  */
 
+/**
+ * Implements hook_requirements().
+ */
 function dewy_requirements($phase) {
   $requirements = array();
   // Ensure translations don't break during installation.
