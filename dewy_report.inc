@@ -85,7 +85,7 @@ function dewy_report() {
     $db_size = 0;
     try {
         $database = $GLOBALS['databases']['default']['default']['database'];
-        $db_size = db_query("SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) as 'mb' FROM information_schema.tables WHERE table_schema = '".$database."';")->fetchField();
+        $db_size = db_query("SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) as 'mb' FROM information_schema.tables WHERE table_schema = :database", array(':database' => $database))->fetchField();
     }
     catch (Exception $e) { }
     $stream->fwrite('"db_size":'.json_encode((float)$db_size).',');
