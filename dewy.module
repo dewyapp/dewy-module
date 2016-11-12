@@ -135,7 +135,7 @@ function dewy_config($form, &$form_state) {
         '#default_value' => variable_get('dewy_api_key', ''),
         '#size' => 40,
         '#maxlength' => 36,
-        '#description' => t('The API key of your Dewy account. This is required to link this site to your Dewy account. <a href="https://dewy.io" target="_blank">Get a Dewy API key</a>.'),
+        '#description' => t('The API key of your Dewy account. This is required to link this site to your Dewy account. <a href="@dewy-site" target="_blank">Get a Dewy API key</a>.', array('@dewy-site' => 'https://dewy.io')),
         '#required' => TRUE,
     );
     $form['#validate'][] = 'dewy_validate';
@@ -172,7 +172,7 @@ function dewy_validate(&$elements, &$form_state, $form_id = NULL) {
     );
     $result = drupal_http_request($base_url.'/admin/reports/dewy', $options);
     if ($result->code == '404' && $form_state['values']['dewy_enabled']) {
-        form_set_error('dewy_api_key','This site is not reachable at the base_url provided ('.$base_url.'). The base_url can be specified in this site\'s settings.php file, or if using Drush, the \'--uri=SITE\' flag.');
+        form_set_error('dewy_api_key', t('This site is not reachable at the base_url provided (@base-url). The base_url can be specified in this site\'s settings.php file, or if using Drush, the \'--uri=SITE\' flag.', array('@base-url' => $base_url)));
     }
     else {
         // Attempt to register the site with Dewy
