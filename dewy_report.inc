@@ -15,34 +15,34 @@ function dewy_report() {
     set_time_limit(600);
   }
 
-  // Measure benchmark
+  // Measure benchmark.
   $time_start = microtime(TRUE);
 
-  // Open stream
+  // Open stream.
   $stream = new SplFileObject('php://output', 'w');
   $stream->fwrite('{');
 
-  // Get audit time
-  $stream->fwrite('"date":'.json_encode(time()).',');
+  // Get audit time.
+  $stream->fwrite('"date":' . json_encode(time()) . ',');
 
-  // Get title
-  $stream->fwrite('"title":'.json_encode(variable_get('site_name')).',');
+  // Get title.
+  $stream->fwrite('"title":' . json_encode(variable_get('site_name')) . ',');
 
-  // Get paths
-  $stream->fwrite('"base_url":'.json_encode($GLOBALS['base_url']).',');
+  // Get paths.
+  $stream->fwrite('"base_url":' . json_encode($GLOBALS['base_url']) . ',');
 
-  // Get Drupal version
-  $stream->fwrite('"drupal_core":'.json_encode(VERSION).',');
+  // Get Drupal version.
+  $stream->fwrite('"drupal_core":' . json_encode(VERSION) . ',');
 
-  // Get PHP details
-  $stream->fwrite('"php":'.json_encode(array('version' => PHP_VERSION, 'max_execution_time' => ini_get('max_execution_time'), 'memory_limit' => ini_get('memory_limit'))).',');
+  // Get PHP details.
+  $stream->fwrite('"php":' . json_encode(array('version' => PHP_VERSION, 'max_execution_time' => ini_get('max_execution_time'), 'memory_limit' => ini_get('memory_limit'))) . ',');
  
-  // Get path accesses
+  // Get path accesses.
   if (variable_get('dewy_traffic', 1)) {
     $stream->fwrite('"traffic":{');
     $ignores = array('admin');
     $result = db_query("SELECT path, hits, lastaccess FROM dewy_counter");
-    $stream->fwrite('"recorded_since":'.json_encode(variable_get('dewy_count_date')).',');
+    $stream->fwrite('"recorded_since":' . json_encode(variable_get('dewy_count_date')) . ',');
     $stream->fwrite('"paths":{');
     $first_row = TRUE;
     while ($path = $result->fetchAssoc()) {
@@ -54,14 +54,14 @@ function dewy_report() {
           else {
             $first_row = FALSE;
           }
-          $stream->fwrite(json_encode($path['path']).':'.json_encode(array('hits' => (float)$path['hits'], 'last_access' => (float)$path['lastaccess'])));
+          $stream->fwrite(json_encode($path['path']) . ':' . json_encode(array('hits' => (float)$path['hits'], 'last_access' => (float)$path['lastaccess'])));
         }
       }
     }
     $stream->fwrite('}},');
   }
 
-  // Get the file count and file sizes
+  // Get the file count and file sizes.
   $stream->fwrite('"files":{');
   $types = array('public', 'private');
   $path['public'] = variable_get('file_public_path', conf_path() . '/files');
@@ -88,20 +88,20 @@ function dewy_report() {
         }
       }
     }
-    $stream->fwrite(json_encode($type).':'.json_encode(array('count' => $count, 'size' => $size)));
+    $stream->fwrite(json_encode($type) . ':' . json_encode(array('count' => $count, 'size' => $size)));
   }
   $stream->fwrite('},');
 
-  // Get database file size
+  // Get database file size.
   $db_size = 0;
   try {
     $database = $GLOBALS['databases']['default']['default']['database'];
     $db_size = db_query("SELECT Round(Sum(data_length + index_length) / 1024 / 1024, 1) as 'mb' FROM information_schema.tables WHERE table_schema = :database", array(':database' => $database))->fetchField();
   }
   catch (Exception $e) { }
-  $stream->fwrite('"db_size":'.json_encode((float)$db_size).',');
+  $stream->fwrite('"db_size":' . json_encode((float)$db_size) . ',');
 
-  // Get all users, roles and last signons
+  // Get all users, roles and last signons.
   $stream->fwrite('"users":{');
   $result = db_query("SELECT users.name AS name, mail, created, access AS last_access, status, GROUP_CONCAT(role.name SEPARATOR ',') AS roles FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid GROUP BY name");
   $first_row = TRUE;
@@ -113,17 +113,17 @@ function dewy_report() {
     else {
       $first_row = FALSE;
     }
-    // Obfuscate usernames and email addresses if necessary
+    // Obfuscate usernames and email addresses if necessary.
     if (!variable_get('dewy_users', 1)) {
       $i++;
       $user['name'] = "$i";
       $user['mail'] = '-1';
     }
-    $stream->fwrite(json_encode($user['name']).':'.json_encode(array('mail' => $user['mail'], 'created' => (float)$user['created'], 'last_access' => (float)$user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
+    $stream->fwrite(json_encode($user['name']) . ':' . json_encode(array('mail' => $user['mail'], 'created' => (float)$user['created'], 'last_access' => (float)$user['last_access'], 'status' => $user['status'], 'roles' => explode(',', $user['roles']))));
   }
   $stream->fwrite('},');
 
-  // Get all text fields on the site
+  // Get all text fields on the site.
   $text_fields = array();
   $fields = field_info_fields();
   foreach ($fields as $field) {
@@ -133,7 +133,7 @@ function dewy_report() {
   }
   unset($fields);
 
-  // Get all node metadata
+  // Get all node metadata.
   $stream->fwrite('"nodes":{');
 
   $query = db_select('node', 'n');
@@ -158,22 +158,22 @@ function dewy_report() {
     $words = 0;
     $data = array('content' => array());
     foreach ($node as $key => $value) {
-      // If key is a node value, store it
+      // If key is a node value, store it.
       if ($key == 'nid' || $key == 'type' || $key == 'created' || $key == 'changed' || $key == 'status') {
         $data[$key] = $value;
       }
-      // Otherwise, the key is a †ext field and the value is content
+      // Otherwise, the key is a †ext field and the value is content.
       else {
         $words = $words + str_word_count($value, 0);
       }
     }
 
-    $stream->fwrite(json_encode($data['nid']).':'.json_encode(array('created' => (float)$data['created'], 'changed' => (float)$data['changed'], 'status'=> (int)$data['status'], 'type' => $data['type'], 'words' => $words)));
+    $stream->fwrite(json_encode($data['nid']) . ':' . json_encode(array('created' => (float)$data['created'], 'changed' => (float)$data['changed'], 'status'=> (int)$data['status'], 'type' => $data['type'], 'words' => $words)));
   }
   $stream->fwrite('},');
   unset($text_fields);
 
-  // Get all block content
+  // Get all block content.
   $stream->fwrite('"blocks":{');
   $result = db_select('block_custom', 'block')
     ->fields('block', array('bid', 'body'))
@@ -187,11 +187,11 @@ function dewy_report() {
       $first_row = FALSE;
     }
 
-    $stream->fwrite(json_encode($block['bid']).':'.json_encode(array('words' => str_word_count($block['body'],0))));
+    $stream->fwrite(json_encode($block['bid']) . ':' . json_encode(array('words' => str_word_count($block['body'],0))));
   }
   $stream->fwrite('},');
 
-  // Get all projects and their respective modules/schema updates
+  // Get all projects and their respective modules/schema updates.
   $stream->fwrite('"projects":');
   require_once DRUPAL_ROOT . '/includes/install.inc';
   drupal_load_updates();
@@ -248,7 +248,7 @@ function dewy_report() {
     else {
       $first_row = FALSE;
     }
-    $stream->fwrite(json_encode($theme->name).':'.json_encode(array('version' => $theme->info['version'], 'status' => $theme->status)));
+    $stream->fwrite(json_encode($theme->name) . ':' . json_encode(array('version' => $theme->info['version'], 'status' => $theme->status)));
   }
   $stream->fwrite('},');
   unset($themes);
@@ -264,15 +264,15 @@ function dewy_report() {
     else {
       $first_row = FALSE;
     }
-    $stream->fwrite(json_encode($variable['name']).':'.json_encode(variable_get($variable['name'])));
+    $stream->fwrite(json_encode($variable['name']) . ':' . json_encode(variable_get($variable['name'])));
   }
   $stream->fwrite('},');
 
-  // Report benchmark
-  $time_end = microtime(true);
+  // Report benchmark.
+  $time_end = microtime(TRUE);
   $time = $time_end - $time_start;
   $stream->fwrite('"benchmark":'.$time);
 
-  // Close stream
+  // Close stream.
   $stream->fwrite('}');
 }

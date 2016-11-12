@@ -47,7 +47,7 @@ function dewy_menu() {
  * Implements hook_menu_site_status_alter().
  */
 function dewy_menu_site_status_alter(&$menu_site_status, $path) {
-  if ($menu_site_status == MENU_SITE_OFFLINE && user_is_anonymous() ) {
+  if ($menu_site_status == MENU_SITE_OFFLINE && user_is_anonymous()) {
     if ($path == 'admin/reports/dewy') {
       $menu_site_status = MENU_SITE_ONLINE;
     }

@@ -15,14 +15,14 @@ function dewy_report() {
     set_time_limit(600);
   }
 
-  // Measure benchmark
+  // Measure benchmark.
   $time_start = microtime(TRUE);
 
-  // Open stream
+  // Open stream.
   $stream = new SplFileObject('php://output', 'w');
   $stream->fwrite('{');
 
-  // Get all text fields on the site
+  // Get all text fields on the site.
   $text_fields = array();
   $fields = field_info_fields();
   foreach ($fields as $field) {
@@ -32,7 +32,7 @@ function dewy_report() {
   }
   unset($fields);
 
-  // Get all node content
+  // Get all node content.
   $stream->fwrite('"nodes":{');
  
   $query = db_select('node', 'n');
@@ -66,7 +66,7 @@ function dewy_report() {
       }
     }
 
-    $stream->fwrite(json_encode($nid).':'.json_encode($content));
+    $stream->fwrite(json_encode($nid) . ':' . json_encode($content));
   }
   $stream->fwrite('},');
   unset($text_fields);
@@ -84,14 +84,14 @@ function dewy_report() {
       $first_row = FALSE;
     }
 
-    $stream->fwrite(json_encode($block['bid']).':'.json_encode($block['body']));
+    $stream->fwrite(json_encode($block['bid']) . ':' . json_encode($block['body']));
   }
   $stream->fwrite('},');
 
   // Report benchmark
-  $time_end = microtime(true);
+  $time_end = microtime(TRUE);
   $time = $time_end - $time_start;
-  $stream->fwrite('"benchmark":'.$time);
+  $stream->fwrite('"benchmark":' . $time);
 
   // Close stream
   $stream->fwrite('}');
