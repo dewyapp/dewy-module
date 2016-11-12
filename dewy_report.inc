@@ -40,7 +40,7 @@ function dewy_report() {
     'max_execution_time' => ini_get('max_execution_time'),
     'memory_limit' => ini_get('memory_limit'),
     ),
-  ) . ',',
+  ) . ','
   );
 
   // Get path accesses.
