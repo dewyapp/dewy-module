@@ -107,7 +107,39 @@ function dewy_report() {
   }
   $stream->fwrite('"db_size":' . json_encode((float) $db_size) . ',');
 
-  // Get all users, roles and last signons.
+  // Get all roles.
+  $stream->fwrite('"roles":{');
+  $query = db_select('role', 'r');
+  $query->fields('r', array('rid', 'name'));
+  $query->leftJoin('role_permission', 'rp', 'rp.rid = r.rid');
+  $query->fields('rp', array('permission', 'module'));
+  $result = $query->execute();
+  $first_row = TRUE;
+  $i = 0;
+  $currentRole = NULL;
+  while ($role = $result->fetchAssoc()) {
+    if (!$first_row) {
+      if ($role['name'] != $currentRole) {
+        $stream->fwrite('],');
+      } else {
+        $stream->fwrite(',');
+      }
+    }
+    else {
+      $first_row = FALSE;
+    }
+    if ($role['name'] != $currentRole) {
+      $stream->fwrite(json_encode($role['name']) . ':[');
+      $currentRole = $role['name'];
+    }
+    $stream->fwrite(json_encode(array(
+      'permission' => $role['permission'],
+      'module' => $role['module']
+    )));
+  }
+  $stream->fwrite(']},');
+
+  // Get all users.
   $stream->fwrite('"users":{');
   $result = db_query("SELECT users.name AS name, mail, created, access AS last_access, status, GROUP_CONCAT(role.name SEPARATOR ',') AS roles FROM users, role, users_roles WHERE users.uid = users_roles.uid AND users_roles.rid = role.rid GROUP BY name");
   $first_row = TRUE;
