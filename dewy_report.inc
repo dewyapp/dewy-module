@@ -181,7 +181,9 @@ function dewy_report() {
   $stream->fwrite('"nodes":{');
 
   $query = db_select('node', 'n');
-  $query->fields('n', array('nid', 'type', 'created', 'changed', 'status'));
+  $query->fields('n', array('nid', 'uid', 'type', 'created', 'changed', 'status'));
+  $query->leftJoin('users', 'u', 'u.uid = n.uid');
+  $query->fields('u', array('name'));
   foreach ($text_fields as $field) {
     $table = _field_sql_storage_tablename($field);
     $column = _field_sql_storage_columnname($field['field_name'], 'value');
@@ -203,7 +205,7 @@ function dewy_report() {
     $data = array('content' => array());
     foreach ($node as $key => $value) {
       // If key is a node value, store it.
-      if ($key == 'nid' || $key == 'type' || $key == 'created' || $key == 'changed' || $key == 'status') {
+      if ($key == 'nid' || $key == 'type' || $key == 'created' || $key == 'changed' || $key == 'status' || $key == 'uid' || $key == 'name') {
         $data[$key] = $value;
       }
       // Otherwise, the key is a †ext field and the value is content.
@@ -218,6 +220,7 @@ function dewy_report() {
       'status' => (int) $data['status'],
       'type' => $data['type'],
       'words' => $words,
+      'author' => $data['name']
     )));
   }
   $stream->fwrite('},');
