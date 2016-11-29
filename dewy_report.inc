@@ -133,8 +133,7 @@ function dewy_report() {
       $currentRole = $role['name'];
     }
     $stream->fwrite(json_encode(array(
-      'permission' => $role['permission'],
-      'module' => $role['module']
+      $role['permission'] => $role['module']
     )));
   }
   $stream->fwrite(']},');
